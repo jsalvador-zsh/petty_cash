@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Acción del reporte -->
+        <record id="action_report_petty_cash" model="ir.actions.report">
+            <field name="name">Formato Caja Chica</field>
+            <field name="model">petty.cash</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">petty_cash.report_petty_cash</field>
+            <field name="report_file">petty_cash.report_petty_cash</field>
+            <field name="print_report_name">'Caja Chica - %s' % (object.name)</field>
+            <field name="binding_model_id" ref="model_petty_cash" />
+            <field name="binding_type">report</field>
+            <field name="paperformat_id" ref="petty_cash.paperformat_a4_horizontal" />
+        </record>
+        <!-- Template del documento -->
+        <template id="report_petty_cash_document">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="petty_cash.peruanita_layout_horizontal">
+                    <t t-set="company" t-value="o.company_id" />
+                    <div class="page"
+                        style="font-family: Arial, sans-serif; font-size: 13px; padding:20px;">
+                        <!-- Encabezado -->
+                        <table
+                            style="width:100%; border:1px solid black; border-collapse: collapse; margin-bottom:10px; font-size:14px;">
+                            <tr>
+                                <td
+                                    style="width:40%; font-size:16px; text-align:left; border:1px solid black; padding:5px;">
+                                    <strong>REPORTE DE CAJA CHICA</strong>
+                                    <br />
+                                    <span style="font-size:14px;">Fecha de actualización: <t
+                                            t-esc="o.date.strftime('%d/%m/%Y')" /></span>
+                                </td>
+                                <td
+                                    style="width:20%; text-align:center; border:1px solid black; padding:5px;">
+                                    <div>
+                                        <strong>
+                                            <t t-esc="o.name" />
+                                        </strong>
+                                    </div>
+                                    <div>Monto Inicial: S/ <t t-esc="o.initial_amount" /></div>
+                                </td>
+                            </tr>
+                        </table>
+                        <!-- Tabla de movimientos -->
+                        <table
+                            style="width:100%; border:1px solid black; border-collapse: collapse; text-align:center; font-size:13px;">
+                            <thead>
+                                <tr>
+                                    <th style="border:1px solid black; width:8%; padding:5px;">FECHA</th>
+                                    <th style="border:1px solid black; width:12%; padding:5px;">
+                                        DOCUMENTO</th>
+                                    <th style="border:1px solid black; width:10%; padding:5px;">N°</th>
+                                    <th style="border:1px solid black; width:20%; padding:5px;">
+                                        PROVEEDOR</th>
+                                    <th style="border:1px solid black; width:25%; padding:5px;">
+                                        CONCEPTO</th>
+                                    <th style="border:1px solid black; width:7%; padding:5px;">TIPO</th>
+                                    <th style="border:1px solid black; width:9%; padding:5px;">
+                                        MONTO</th>
+                                    <th style="border:1px solid black; width:9%; padding:5px;">
+                                        SALDO</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="o.line_ids" t-as="line" t-foreach-index="i">
+                                    <tr>
+                                        <td style="border:1px solid black; padding:5px;">
+                                            <t t-esc="line.date.strftime('%d/%m/%Y')" />
+                                        </td>
+                                        <td class="text-uppercase"
+                                            style="border:1px solid black; padding:5px; ">
+                                            <t t-esc="line.document_type" />
+                                        </td>
+                                        <td style="border:1px solid black; padding:5px;">
+                                            <t t-esc="line.document_number" />
+                                        </td>
+                                        <td
+                                            style="border:1px solid black; text-align:left; padding:5px;">
+                                            <t t-esc="line.partner_name" />
+                                        </td>
+                                        <td class="text-uppercase"
+                                            style="border:1px solid black; text-align:left; padding:5px;">
+                                            <t t-esc="line.description" />
+                                        </td>
+                                        <td style="border:1px solid black; padding:5px;">
+                                            <t t-if="line.line_type == 'income'">INGRESO</t>
+                                            <t t-if="line.line_type == 'expense'">EGRESO</t>
+                                        </td>
+                                        <td
+                                            style="border:1px solid black; text-align:right; padding:5px;">
+                                            S/ <t t-esc="line.amount" /></td>
+                                        <td
+                                            style="border:1px solid black; text-align:right; padding:5px;">
+                                            S/ <t t-esc="line.balance" /></td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                        <!-- Resumen -->
+                        <table
+                            style="width:100%; border:1px solid black; border-collapse: collapse; margin-top:10px; font-size:13px;">
+                            <tr>
+                                <td
+                                    style="border:1px solid black; width:70%; text-align:right; padding:5px;">TOTAL
+                                    INGRESOS</td>
+                                <td style="border:1px solid black; text-align:right; padding:5px;">
+                                    S/ <t t-esc="o.total_income" /></td>
+                            </tr>
+                            <tr>
+                                <td style="border:1px solid black; text-align:right; padding:5px;">TOTAL
+                                    EGRESOS</td>
+                                <td style="border:1px solid black; text-align:right; padding:5px;">
+                                    S/ <t t-esc="o.total_expense" /></td>
+                            </tr>
+                            <tr>
+                                <td
+                                    style="border:1px solid black; text-align:right; font-weight:bold; padding:5px;">SALDO
+                                    FINAL</td>
+                                <td
+                                    style="border:1px solid black; text-align:right; font-weight:bold; padding:5px;">
+                                    S/ <t t-esc="o.current_balance" /></td>
+                            </tr>
+                        </table>
+                        <!-- Firmas -->
+                        <div style="width:100%; margin-top:50px; text-align:center;">
+                            <div
+                                style="display:inline-block; width:20%; margin:0 2%; text-align:center; font-size:10px;">
+                                <div
+                                    style="border-top:1px solid black; margin-top:50px; padding-top:5px;">V.B.
+                                    Administración</div>
+                            </div>
+                            <div
+                                style="display:inline-block; width:20%; margin:0 2%; text-align:center; font-size:10px;">
+                                <div
+                                    style="border-top:1px solid black; margin-top:50px; padding-top:5px;">V.B.
+                                    Contabilidad</div>
+                            </div>
+                            <div
+                                style="display:inline-block; width:20%; margin:0 2%; text-align:center; font-size:10px;">
+                                <div
+                                    style="border-top:1px solid black; margin-top:50px; padding-top:5px;">V.B.
+                                    Gerencia</div>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </template>
+        <!-- Template principal -->
+        <template id="report_petty_cash">
+            <t t-call="web.html_container">
+                <t t-foreach="docs" t-as="doc">
+                    <t t-call="petty_cash.report_petty_cash_document" />
+                </t>
+            </t>
+        </template>
+    </data>
+</odoo>

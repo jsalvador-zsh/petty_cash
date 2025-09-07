@@ -1,0 +1,9 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_petty_cash_user,caja.chica.user,model_petty_cash,base.group_user,1,1,1,0
+access_petty_cash_manager,caja.chica.manager,model_petty_cash,account.group_account_manager,1,1,1,1
+access_petty_cash_line_user,caja.chica.line.user,model_petty_cash_line,base.group_user,1,1,1,0
+access_petty_cash_line_manager,caja.chica.line.manager,model_petty_cash_line,account.group_account_manager,1,1,1,1
+access_distribution_cash_user,caja.distribucion.user,model_distribution_cash,base.group_user,1,1,1,0
+access_distribution_cash_manager,caja.distribucion.manager,model_distribution_cash,account.group_account_manager,1,1,1,1
+access_distribution_cash_line_user,caja.distribucion.line.user,model_distribution_cash_line,base.group_user,1,1,1,0
+access_distribution_cash_line_manager,caja.distribucion.line.manager,model_distribution_cash_line,account.group_account_manager,1,1,1,1

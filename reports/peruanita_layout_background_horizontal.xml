@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <template id="peruanita_layout_horizontal">
+    <div t-attf-class="header o_company_#{company.id}_layout">
+      <t t-set="o" t-value="o if o else (doc if doc else docs[0])" />
+      <div class="o_report_header_pe_horizontal">
+        <div class="row align-items-center">
+          <div class="col-2 d-flex justify-content-center align-items-center" name="company_logo"
+            style="height: 100%;">
+            <img t-if="company.logo" t-att-src="image_data_uri(company.logo)" alt="Logo"
+              style="max-height: 45px; object-fit: contain;" />
+          </div>
+          <div class="col-10 d-flex flex-column justify-content-center" name="company_address"
+            style="font-size: 12px; line-height: 1.2;">
+            <div>
+              <span style="font-size:14px; font-weight:900;">
+                <t t-esc="company.name" />
+              </span>
+            </div>
+            <div>
+              <span t-field="company.street" />
+            </div>
+            <div class="row" style="margin-top: 2px;">
+              <div class="col-12" t-if="company.email">
+                <b>Email: </b>
+                <span t-field="company.email" />
+                <b>Teléfono: </b>
+                <span t-field="company.phone" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div t-attf-class="o_company_#{company.id}_layout article o_report_layout_pe_horizontal"
+      t-att-data-oe-model="o and o._name"
+      t-att-data-oe-id="o and o.id"
+      t-att-data-oe-lang="o and o.env.context.get('lang')"
+      style="padding-top: 0px; margin-top: 0px;">
+      <t t-raw="0" />
+    </div>
+  </template>
+  <record id="base.main_company" model="res.company">
+    <field name="external_report_layout_id" ref="petty_cash.peruanita_layout_horizontal" />
+  </record>
+</odoo>

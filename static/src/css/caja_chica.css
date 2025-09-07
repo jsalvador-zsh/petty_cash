@@ -1,0 +1,193 @@
+/* Estilos para el módulo de Caja Chica adaptados a Odoo Enterprise */
+
+/* Variables de colores según Odoo Enterprise */
+:root {
+    --odoo-enterprise-primary: #714B67;
+    --odoo-enterprise-secondary: #8f5c87;
+    --odoo-enterprise-light: #f8f9fa;
+    --odoo-enterprise-dark: #212529;
+    --odoo-enterprise-success: #2C9B4A;
+    --odoo-enterprise-info: #17a2b8;
+    --odoo-enterprise-warning: #F9B34A;
+    --odoo-enterprise-danger: #dc3545;
+}
+
+/* Widget de selección principal - Estilo Odoo Enterprise */
+.o_caja_selection_widget {
+    background-color: #ffffff;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+.layout {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.o_enterprise_container {
+    background-color: #ffffff;
+}
+
+/* Encabezados */
+.o_enterprise_heading {
+    color: var(--odoo-enterprise-primary);
+    font-weight: 600;
+    font-size: 1.8rem;
+}
+
+.o_enterprise_subtitle {
+    color: #6c757d;
+    font-size: 1rem;
+}
+
+/* Cards de selección - Estilo Odoo Enterprise */
+.o_enterprise_card {
+    background: #ffffff;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.o_enterprise_card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+.caja-option-disabled {
+    opacity: 0.7;
+}
+
+.caja-option-disabled:hover {
+    transform: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* Títulos y textos de cards */
+.o_enterprise_card_title {
+    color: var(--odoo-enterprise-primary);
+    font-weight: 600;
+    font-size: 1.2rem;
+}
+
+.o_enterprise_card_text {
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+/* Colores para iconos y textos */
+.o_text_enterprise {
+    color: var(--odoo-enterprise-primary);
+}
+
+.o_text_primary {
+    color: var(--odoo-enterprise-primary);
+}
+
+.o_text_warning {
+    color: var(--odoo-enterprise-warning);
+}
+
+/* Card de acciones rápidas */
+.o_enterprise_secondary_card {
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+}
+
+.o_enterprise_secondary_title {
+    color: var(--odoo-enterprise-primary);
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+/* Botones de outline - Estilo Odoo Enterprise */
+.o_enterprise_outline_btn {
+    border-radius: 4px;
+    padding: 6px 12px;
+    font-weight: 500;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+}
+
+.o_outline_success {
+    color: var(--odoo-enterprise-success);
+    border: 1px solid var(--odoo-enterprise-success);
+}
+
+.o_outline_success:hover {
+    background-color: var(--odoo-enterprise-success);
+    color: white;
+}
+
+.o_outline_info {
+    color: var(--odoo-enterprise-info);
+    border: 1px solid var(--odoo-enterprise-info);
+}
+
+.o_outline_info:hover {
+    background-color: var(--odoo-enterprise-info);
+    color: white;
+}
+
+.o_outline_secondary {
+    color: #6c757d;
+    border: 1px solid #6c757d;
+}
+
+.o_outline_secondary:hover {
+    background-color: #6c757d;
+    color: white;
+}
+
+/* Badge de próximamente */
+.o_enterprise_badge {
+    font-size: 0.7rem;
+    padding: 0.35em 0.65em;
+    font-weight: 500;
+}
+
+.o_bg_warning {
+    background-color: var(--odoo-enterprise-warning) !important;
+    color: #000;
+}
+
+/* Texto de footer */
+.o_enterprise_footer_text {
+    font-size: 0.8rem;
+}
+
+/* Estilos responsivos */
+@media (max-width: 768px) {
+    .o_caja_selection_widget .container-fluid {
+        background-color: #ffffff;
+        padding: 1rem;
+    }
+    
+    .o_enterprise_card .card-body {
+        padding: 1.5rem !important;
+    }
+}
+
+/* Animaciones suaves */
+.o_enterprise_card {
+    animation: fadeInUp 0.4s ease forwards;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <!-- Template principal del widget de selección -->
+    <t t-name="petty_cash.CajaSelectionWidget">
+        <div class="o_caja_selection_widget o_enterprise_container">
+            <div class="layout">
+                <div class="container-fluid py-4">
+
+                    <!-- Header con estadísticas -->
+                    <div class="row justify-content-center mb-4">
+                        <div class="col-12 text-center">
+                            <h2 class="mb-2 o_enterprise_heading">
+                                Seleccione el tipo de caja que desea gestionar
+                            </h2>                            
+                        </div>
+                    </div>
+
+                    <!-- Opciones principales -->
+                    <div class="row justify-content-center mb-4">
+                        <div class="col-lg-10">
+                            <div class="row g-3">
+
+                                <!-- Caja Chica -->
+                                <div class="col-md-6">
+                                    <div class="card h-100 o_enterprise_card caja-option" 
+                                         t-on-click="() => this.onSelectCajaType('petty_cash')">
+                                        <div class="card-body text-center p-4">
+                                            <div class="mb-3">
+                                                <i class="fa fa-money fa-3x o_text_primary"></i>
+                                            </div>
+                                            <h4 class="card-title mb-2 o_enterprise_card_title">Caja Chica</h4>
+                                            <p class="card-text text-muted mb-3 o_enterprise_card_text">
+                                                Gestión de gastos menores y control de fondos fijos.
+                                                Registro detallado de ingresos y egresos.
+                                            </p>
+                                            
+                                            <!-- Stats de Caja Chica -->
+                                            <div class="row mb-3">
+                                                <div class="col-6">
+                                                    <small class="text-muted">Total:</small>
+                                                    <div class="fw-bold text-primary" t-esc="state.stats.petty_cash.total"/>
+                                                </div>
+                                                <div class="col-6">
+                                                    <small class="text-muted">Abiertas:</small>
+                                                    <div class="fw-bold text-success" t-esc="state.stats.petty_cash.open"/>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="d-grid">
+                                                <button class="btn btn-primary">
+                                                    <i class="fa fa-arrow-right me-2"></i>
+                                                    Acceder
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Caja de Distribución -->
+                                <div class="col-md-6">
+                                    <div class="card h-100 o_enterprise_card caja-option" 
+                                         t-on-click="() => this.onSelectCajaType('distribution_cash')">
+                                        <div class="card-body text-center p-4">
+                                            <div class="mb-3">
+                                                <i class="fa fa-truck fa-3x o_text_warning"></i>
+                                            </div>
+                                            <h4 class="card-title mb-2 o_enterprise_card_title">Caja de Distribución</h4>
+                                            <p class="card-text text-muted mb-3 o_enterprise_card_text">
+                                                Control de gastos de distribución y logística.
+                                                Seguimiento de rutas, combustible y entregas.
+                                            </p>
+                                            
+                                            <!-- Stats de Caja Distribución -->
+                                            <div class="row mb-3">
+                                                <div class="col-6">
+                                                    <small class="text-muted">Total:</small>
+                                                    <div class="fw-bold text-warning" t-esc="state.stats.distribution_cash.total"/>
+                                                </div>
+                                                <div class="col-6">
+                                                    <small class="text-muted">Abiertas:</small>
+                                                    <div class="fw-bold text-success" t-esc="state.stats.distribution_cash.open"/>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="d-grid">
+                                                <button class="btn btn-warning">
+                                                    <i class="fa fa-arrow-right me-2"></i>
+                                                    Acceder
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Acciones rápidas para Caja Chica -->
+                    <div class="row justify-content-center mb-3">
+                        <div class="col-lg-10">
+                            <div class="card o_enterprise_secondary_card">
+                                <div class="card-body p-3">
+                                    <h5 class="card-title mb-2 o_enterprise_secondary_title">
+                                        <i class="fa fa-bolt me-2"></i>
+                                        Acciones Rápidas - Caja Chica
+                                    </h5>
+                                    <div class="row g-2">
+                                        <div class="col-md-4">
+                                            <button class="btn btn-outline-success w-100" 
+                                                    t-on-click="onCreateCajaChica">
+                                                <i class="fa fa-plus-circle me-2"></i>
+                                                Nueva Caja
+                                            </button>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <button class="btn btn-outline-info w-100" 
+                                                    t-on-click="onViewOpenCajas">
+                                                <i class="fa fa-folder-open me-2"></i>
+                                                Cajas Abiertas
+                                            </button>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <button class="btn btn-outline-secondary w-100" 
+                                                    t-on-click="() => this.onSelectCajaType('petty_cash')">
+                                                <i class="fa fa-list me-2"></i>
+                                                Ver Todas
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Acciones rápidas para Caja de Distribución -->
+                    <div class="row justify-content-center mb-4">
+                        <div class="col-lg-10">
+                            <div class="card o_enterprise_secondary_card">
+                                <div class="card-body p-3">
+                                    <h5 class="card-title mb-2 o_enterprise_secondary_title">
+                                        <i class="fa fa-truck me-2"></i>
+                                        Acciones Rápidas - Caja de Distribución
+                                    </h5>
+                                    <div class="row g-2">
+                                        <div class="col-md-4">
+                                            <button class="btn btn-outline-warning w-100" 
+                                                    t-on-click="onCreateDistributionCash">
+                                                <i class="fa fa-plus-circle me-2"></i>
+                                                Nueva Caja
+                                            </button>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <button class="btn btn-outline-info w-100" 
+                                                    t-on-click="onViewOpenDistribution">
+                                                <i class="fa fa-folder-open me-2"></i>
+                                                Cajas Abiertas
+                                            </button>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <button class="btn btn-outline-secondary w-100" 
+                                                    t-on-click="() => this.onSelectCajaType('distribution_cash')">
+                                                <i class="fa fa-list me-2"></i>
+                                                Ver Todas
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Footer informativo -->
+                    <div class="row justify-content-center">
+                        <div class="col-lg-8 text-center">
+                            <p class="text-muted o_enterprise_footer_text">
+                                <i class="fa fa-info-circle me-1"></i>
+                                Sistema completo de gestión de cajas para control financiero y logístico empresarial
+                            </p>
+                            <div class="d-flex justify-content-center gap-3 mt-2">
+                                <small class="text-muted">
+                                    <i class="fa fa-money text-primary me-1"></i>
+                                    Caja Chica: Gastos menores
+                                </small>
+                                <small class="text-muted">
+                                    <i class="fa fa-truck text-warning me-1"></i>
+                                    Distribución: Logística y transporte
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </t>
+
+</templates>

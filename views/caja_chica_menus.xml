@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- Acción para el widget de selección -->
+        <record id="action_caja_selection_widget" model="ir.actions.client">
+            <field name="name">Gestión de Cajas</field>
+            <field name="tag">caja_selection_widget</field>
+        </record>
+
+        <!-- Acción principal para Caja Chica -->
+        <record id="action_petty_cash" model="ir.actions.act_window">
+            <field name="name">Caja Chica</field>
+            <field name="res_model">petty.cash</field>
+            <field name="view_mode">kanban,list,form</field>
+            <field name="context">{
+                'default_state': 'draft',
+                'search_default_my_cajas': 1,
+            }</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    ¡Crea tu primera Caja Chica!
+                </p>
+                <p>
+                    Las Cajas Chicas te permiten llevar un control detallado de gastos menores
+                    y fondos fijos de manera organizada y profesional.
+                </p>
+            </field>
+        </record>
+
+        <!-- Acción para movimientos de Caja Chica -->
+        <record id="action_petty_cash_line" model="ir.actions.act_window">
+            <field name="name">Movimientos de Caja Chica</field>
+            <field name="res_model">petty.cash.line</field>
+            <field name="view_mode">list,form</field>
+            <field name="context">{}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    No hay movimientos registrados
+                </p>
+                <p>
+                    Los movimientos se crean desde las Cajas Chicas correspondientes.
+                </p>
+            </field>
+        </record>
+
+        <!-- Menú principal de la aplicación -->
+        <menuitem id="menu_petty_cash_main" 
+                  name="Caja Chica" 
+                  sequence="90"
+                  web_icon="petty_cash,static/description/icon.png"
+                  action="action_caja_selection_widget"/>
+
+        <!-- Submenús -->
+        <menuitem id="menu_petty_cash_root" 
+                  name="Caja Chica" 
+                  parent="menu_petty_cash_main" 
+                  sequence="10"/>
+
+        <menuitem id="menu_petty_cash_cajas" 
+                  name="Mis Cajas Chicas" 
+                  parent="menu_petty_cash_root" 
+                  sequence="10"
+                  action="action_petty_cash"/>
+
+        <menuitem id="menu_petty_cash_all" 
+                  name="Todas las Cajas" 
+                  parent="menu_petty_cash_root" 
+                  sequence="20"
+                  action="action_petty_cash"
+                  groups="account.group_account_manager"/>
+
+        <menuitem id="menu_petty_cash_movements" 
+                  name="Movimientos" 
+                  parent="menu_petty_cash_root" 
+                  sequence="30"
+                  action="action_petty_cash_line"/>
+
+        <!-- Menú de configuración -->
+        <menuitem id="menu_petty_cash_config" 
+                  name="Configuración" 
+                  parent="menu_petty_cash_main" 
+                  sequence="90"
+                  groups="account.group_account_manager"/>
+
+        <!-- Acción para crear nueva caja chica desde el menú -->
+        <record id="action_petty_cash_new" model="ir.actions.act_window">
+            <field name="name">Nueva Caja Chica</field>
+            <field name="res_model">petty.cash</field>
+            <field name="view_mode">form</field>
+            <field name="target">current</field>
+            <field name="context">{
+                'default_state': 'draft',
+            }</field>
+        </record>
+
+        <menuitem id="menu_petty_cash_new" 
+                  name="Crear Nueva Caja" 
+                  parent="menu_petty_cash_root" 
+                  sequence="5"
+                  action="action_petty_cash_new"/>
+
+        <!-- Reporte y análisis -->
+        <menuitem id="menu_petty_cash_reports" 
+                  name="Reportes" 
+                  parent="menu_petty_cash_main" 
+                  sequence="80"/>
+
+        <!-- Acción para cajas abiertas -->
+        <record id="action_petty_cash_open" model="ir.actions.act_window">
+            <field name="name">Cajas Chicas Abiertas</field>
+            <field name="res_model">petty.cash</field>
+            <field name="view_mode">kanban,list,form</field>
+            <field name="domain">[('state', '=', 'open')]</field>
+            <field name="context">{
+                'search_default_open': 1,
+            }</field>
+        </record>
+
+        <menuitem id="menu_petty_cash_open" 
+                  name="Cajas Abiertas" 
+                  parent="menu_petty_cash_reports" 
+                  sequence="10"
+                  action="action_petty_cash_open"/>
+
+        <!-- Acción para resumen mensual -->
+<record id="action_petty_cash_monthly" model="ir.actions.act_window">
+    <field name="name">Resumen Mensual</field>
+    <field name="res_model">petty.cash</field>
+    <field name="view_mode">list,form</field>
+<field name="domain">[('date', '>=', (context_today().strftime('%Y-%m-01')))]</field>
+
+
+    <field name="context">{'search_default_group_by_responsible_id': 1}</field>
+</record>
+
+<menuitem id="menu_petty_cash_monthly"
+          name="Resumen Mensual"
+          parent="menu_petty_cash_reports"
+          sequence="20"
+          action="action_petty_cash_monthly"/>
+
+
+
+    </data>
+</odoo>
