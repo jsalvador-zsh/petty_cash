@@ -35,6 +35,16 @@ class CajaChica(models.Model):
         default=lambda self: self.env.user
     )
 
+    initial_payment_type_id = fields.Many2one(
+        'payment.type',
+        string='Tipo de Pago Inicial'
+    )
+
+    initial_operation_number = fields.Char(
+        string='Número de Operación/Cheque',
+        help='Número de operación bancaria, cheque u otro documento'
+    )
+    
     # Información financiera
     initial_amount = fields.Float(
         string='Monto Inicial',

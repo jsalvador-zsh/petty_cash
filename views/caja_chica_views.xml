@@ -49,6 +49,10 @@
                                 <field name="company_id" groups="base.group_multi_company" readonly="state == 'closed'"/>
                                 <field name="initial_amount" readonly="state == 'closed'"/>
                             </group>
+                            <group string="Información del Monto Inicial">
+                                <field name="initial_payment_type_id" readonly="state == 'closed'"/>
+                                <field name="initial_operation_number" readonly="state == 'closed'" placeholder="Ej: OP-123456 o CHQ-789"/>
+                            </group>
                         </group>
                         
                         <group>

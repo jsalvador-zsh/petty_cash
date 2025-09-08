@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <record id="payment_type_cash" model="payment.type">
+    <field name="name">Efectivo</field>
+    <field name="code">CASH</field>
+    <field name="sequence">10</field>
+    <field name="requires_number">False</field>
+  </record>
+  <record id="payment_type_transfer" model="payment.type">
+    <field name="name">Transferencia Bancaria</field>
+    <field name="code">TRANSFER</field>
+    <field name="sequence">20</field>
+    <field name="requires_number">True</field>
+  </record>
+</odoo>

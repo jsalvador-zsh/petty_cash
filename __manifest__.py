@@ -22,6 +22,7 @@
         'security/caja_chica_security.xml',
         'security/ir.model.access.csv',
         'data/sequence_data.xml',
+        'data/payment_types_data.xml',
         'views/caja_chica_views.xml',
         'views/caja_chica_menus.xml',
         'views/distribution_cash_views.xml',

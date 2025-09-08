@@ -38,7 +38,16 @@
                                             <t t-esc="o.name" />
                                         </strong>
                                     </div>
-                                    <div>Monto Inicial: S/ <t t-esc="o.initial_amount" /></div>
+                                    <div>
+                                        <strong> 
+                                            <t t-esc="o.initial_payment_type_id.name" />:
+                                        </strong>
+                                             <t t-esc="o.initial_operation_number" />
+                                    </div>
+                                    <div>
+                                        <strong> Monto Inicial: </strong>
+                                        S/<t t-esc="o.initial_amount" />
+                                    </div>
                                 </td>
                             </tr>
                         </table>

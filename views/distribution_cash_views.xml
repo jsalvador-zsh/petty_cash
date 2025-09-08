@@ -41,7 +41,6 @@
                                 <field name="name" readonly="1"/>
                             </h1>
                         </div>
-                        
                         <group>
                             <group string="Información General">
                                 <field name="date" readonly="state == 'closed'"/>
@@ -49,8 +48,11 @@
                                 <field name="company_id" groups="base.group_multi_company" readonly="state == 'closed'"/>
                                 <field name="initial_amount" readonly="state == 'closed'"/>
                             </group>
+                            <group string="Información del Monto Inicial">
+                                <field name="initial_payment_type_id" readonly="state == 'closed'"/>
+                                <field name="initial_operation_number" readonly="state == 'closed'" placeholder="Ej: OP-123456 o CHQ-789"/>
+                            </group>
                         </group>
-                        
                         <group>
                             <group string="Resumen Financiero">
                                 <field name="total_income" readonly="1"/>
@@ -58,7 +60,6 @@
                                 <field name="current_balance" readonly="1" class="oe_subtotal_footer_separator"/>
                             </group>
                         </group>
-                        
                         <notebook>
                             <page string="Movimientos" name="movements">
                                 <field name="line_ids" readonly="state == 'closed'" context="{'default_distribution_cash_id': id}">
