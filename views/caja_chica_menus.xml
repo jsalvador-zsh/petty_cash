@@ -48,6 +48,7 @@
         <menuitem id="menu_petty_cash_main" 
                   name="Caja Chica" 
                   sequence="90"
+                  groups="account.group_account_manager"
                   web_icon="petty_cash,static/description/icon.png"
                   action="action_caja_selection_widget"/>
 
