@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        
+        <!-- Vista Tree de Caja de Logística -->
+        <record id="view_logistics_cash_list" model="ir.ui.view">
+            <field name="name">logistics.cash.list</field>
+            <field name="model">logistics.cash</field>
+            <field name="arch" type="xml">
+                <list string="Cajas de Logística" decoration-success="state=='open'" decoration-muted="state=='closed'" decoration-danger="state=='cancelled'">
+                    <field name="name"/>
+                    <field name="date"/>
+                    <field name="responsible_id"/>
+                    <field name="initial_amount" sum="Total Inicial"/>
+                    <field name="total_income" sum="Total Ingresos"/>
+                    <field name="total_expense" sum="Total Egresos"/>
+                    <field name="current_balance" sum="Saldo Total"/>
+                    <field name="state" widget="badge" decoration-success="state=='open'" decoration-muted="state=='closed'" decoration-danger="state=='cancelled'"/>
+                    <field name="company_id" groups="base.group_multi_company"/>
+                </list>
+            </field>
+        </record>
+
+        <!-- Vista Form de Caja de Logística -->
+        <record id="view_logistics_cash_form" model="ir.ui.view">
+            <field name="name">logistics.cash.form</field>
+            <field name="model">logistics.cash</field>
+            <field name="arch" type="xml">
+                <form string="Caja de Logística">
+                    <header>
+                        <button name="action_open" string="Abrir Caja" type="object" class="btn-primary" invisible="state != 'draft'"/>
+                        <button name="action_close" string="Cerrar Caja" type="object" class="btn-success" invisible="state != 'open'" confirm="¿Está seguro de cerrar esta caja de logística?"/>
+                        <button name="action_cancel" string="Cancelar" type="object" class="btn-danger" invisible="state not in ('draft', 'open')" confirm="¿Está seguro de cancelar esta caja de logística?"/>
+                        <button name="action_reset_to_draft" string="Restablecer a Borrador" type="object" invisible="state == 'draft'"/>
+                        <field name="state" widget="statusbar" statusbar_visible="draft,open,closed"/>
+                    </header>
+                    
+                    <sheet>
+                        <div class="oe_title">
+                            <h1>
+                                <field name="name" readonly="1"/>
+                            </h1>
+                        </div>
+                        <group>
+                            <group string="Información General">
+                                <field name="date" readonly="state == 'closed'"/>
+                                <field name="responsible_id" readonly="state == 'closed'"/>
+                                <field name="company_id" groups="base.group_multi_company" readonly="state == 'closed'"/>
+                                <field name="initial_amount" readonly="state == 'closed'"/>
+                            </group>
+                            <group string="Información del Monto Inicial">
+                                <field name="initial_payment_type_id" readonly="state == 'closed'"/>
+                                <field name="initial_operation_number" readonly="state == 'closed'" placeholder="Ej: OP-123456 o CHQ-789"/>
+                            </group>
+                        </group>
+                        <group>
+                            <group string="Resumen Financiero">
+                                <field name="total_income" readonly="1"/>
+                                <field name="total_expense" readonly="1"/>
+                                <field name="current_balance" readonly="1" class="oe_subtotal_footer_separator"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Movimientos" name="movements">
+                                <field name="line_ids" readonly="state == 'closed'" context="{'default_logistics_cash_id': id}">
+                                    <list editable="bottom" string="Movimientos">
+                                        <field name="sequence" widget="handle"/>
+                                        <field name="date"/>
+                                        <field name="line_type"/>
+                                        <field name="area_id"/>
+                                        <field name="document_type"/>
+                                        <field name="document_number"/>
+                                        <field name="partner_id"/>
+                                        <field name="partner_name"/>
+                                        <field name="description"/>
+                                        <field name="amount" sum="Total"/>
+                                        <field name="balance"/>
+                                    </list>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    
+                    <chatter />
+                </form>
+            </field>
+        </record>
+
+        <!-- Vista Kanban de Caja de Logística -->
+        <record id="view_logistics_cash_kanban" model="ir.ui.view">
+            <field name="name">logistics.cash.kanban</field>
+            <field name="model">logistics.cash</field>
+            <field name="arch" type="xml">
+                <kanban class="o_kanban_mobile">
+                    <field name="name"/>
+                    <field name="date"/>
+                    <field name="responsible_id"/>
+                    <field name="current_balance"/>
+                    <field name="state"/>
+                    <templates>
+                        <t t-name="kanban-box">
+                            <div class="oe_kanban_card oe_kanban_global_click">
+                                <div class="oe_kanban_content">
+                                    <div class="row">
+                                        <div class="col-8">
+                                            <strong><field name="name"/></strong>
+                                        </div>
+                                        <div class="col-4 text-right">
+                                            <field name="state" widget="label_selection" options="{'classes': {'draft': 'secondary', 'open': 'success', 'closed': 'info', 'cancelled': 'danger'}}"/>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-12">
+                                            <field name="date"/>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-8">
+                                            <field name="responsible_id"/>
+                                        </div>
+                                        <div class="col-4 text-right">
+                                            <strong>S/. <field name="current_balance"/></strong>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </t>
+                    </templates>
+                </kanban>
+            </field>
+        </record>
+
+        <!-- Vista Search de Caja de Logística -->
+        <record id="view_logistics_cash_search" model="ir.ui.view">
+            <field name="name">logistics.cash.search</field>
+            <field name="model">logistics.cash</field>
+            <field name="arch" type="xml">
+                <search string="Buscar Caja de Logística">
+                    <field name="name" string="Número"/>
+                    <field name="responsible_id" string="Responsable"/>
+                    <field name="date"/>
+                    <filter string="Borradores" name="draft" domain="[('state','=','draft')]"/>
+                    <filter string="Abiertas" name="open" domain="[('state','=','open')]"/>
+                    <filter string="Cerradas" name="closed" domain="[('state','=','closed')]"/>
+                    <separator/>
+                    <filter string="Mis Cajas" name="my_cajas" domain="[('responsible_id','=',uid)]"/>
+                    <separator/>
+                    <filter string="Este Mes" name="current_month" domain="[('date','&gt;=',datetime.datetime.now().replace(day=1))]"/>
+                    <group expand="0" string="Agrupar Por">
+                        <filter string="Estado" name="group_state" context="{'group_by': 'state'}"/>
+                        <filter string="Responsable" name="group_responsible" context="{'group_by': 'responsible_id'}"/>
+                        <filter string="Fecha" name="group_date" context="{'group_by': 'date:month'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <!-- Vista Tree de Líneas de Caja de Logística -->
+        <record id="view_logistics_cash_line_list" model="ir.ui.view">
+            <field name="name">logistics.cash.line.list</field>
+            <field name="model">logistics.cash.line</field>
+            <field name="arch" type="xml">
+                <list string="Movimientos de Caja de Logística">
+                    <field name="logistics_cash_id"/>
+                    <field name="date"/>
+                    <field name="line_type" widget="badge" decoration-success="line_type=='income'" decoration-danger="line_type=='expense'"/>
+                    <field name="area_id"/>
+                    <field name="document_type"/>
+                    <field name="document_number"/>
+                    <field name="partner_name"/>
+                    <field name="description"/>
+                    <field name="amount" sum="Total"/>
+                    <field name="balance"/>
+                </list>
+            </field>
+        </record>
+
+        <!-- Vista Form de Líneas de Caja de Logística -->
+        <record id="view_logistics_cash_line_form" model="ir.ui.view">
+            <field name="name">logistics.cash.line.form</field>
+            <field name="model">logistics.cash.line</field>
+            <field name="arch" type="xml">
+                <form string="Movimiento de Caja de Logística">
+                    <sheet>
+                        <group>
+                            <group string="Información del Movimiento">
+                                <field name="logistics_cash_id"/>
+                                <field name="date"/>
+                                <field name="line_type"/>
+                                <field name="area_id"/>
+                            </group>
+                            <group string="Documento">
+                                <field name="document_type"/>
+                                <field name="document_number"/>
+                                <field name="partner_id"/>
+                                <field name="partner_name"/>
+                            </group>
+                        </group>
+                        <group>
+                            <group string="Descripción y Monto">
+                                <field name="description"/>
+                                <field name="amount"/>
+                                <field name="balance" readonly="1"/>
+                            </group>
+                        </group>
+                        <group string="Observaciones y Adjuntos">
+                            <field name="notes"/>
+                            <field name="attachment_ids" widget="many2many_binary"/>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <!-- Vista Search de Líneas de Logística -->
+        <record id="view_logistics_cash_line_search" model="ir.ui.view">
+            <field name="name">logistics.cash.line.search</field>
+            <field name="model">logistics.cash.line</field>
+            <field name="arch" type="xml">
+                <search string="Buscar Movimientos de Logística">
+                    <field name="logistics_cash_id"/>
+                    <field name="description"/>
+                    <field name="partner_name"/>
+                    <field name="date"/>
+                    <filter string="Ingresos" name="income" domain="[('line_type','=','income')]"/>
+                    <filter string="Egresos" name="expense" domain="[('line_type','=','expense')]"/>
+                    <separator/>
+                    <filter string="Este Mes" name="current_month" domain="[('date','&gt;=',datetime.datetime.now().replace(day=1))]"/>
+                    <group expand="0" string="Agrupar Por">
+                        <filter string="Caja de Logística" name="group_caja" context="{'group_by': 'logistics_cash_id'}"/>
+                        <filter string="Tipo" name="group_type" context="{'group_by': 'line_type'}"/>
+                        <filter string="Fecha" name="group_date" context="{'group_by': 'date:month'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+    </data>
+</odoo>

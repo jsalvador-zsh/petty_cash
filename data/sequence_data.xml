@@ -26,5 +26,18 @@
             <field name="use_date_range">True</field>
             <field name="company_id" eval="False" />
         </record>
+
+        <!-- Secuencia para Caja de Logística -->
+        <record id="sequence_logistics_cash" model="ir.sequence">
+            <field name="name">Secuencia Caja de Logística</field>
+            <field name="code">logistics.cash</field>
+            <field name="prefix">LOG/%(year)s/</field>
+            <field name="suffix"></field>
+            <field name="padding">3</field>
+            <field name="number_next">1</field>
+            <field name="number_increment">1</field>
+            <field name="use_date_range">True</field>
+            <field name="company_id" eval="False" />
+        </record>
     </data>
 </odoo>

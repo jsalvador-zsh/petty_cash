@@ -7,5 +7,9 @@ access_distribution_cash_user,caja.distribucion.user,model_distribution_cash,bas
 access_distribution_cash_manager,caja.distribucion.manager,model_distribution_cash,account.group_account_manager,1,1,1,1
 access_distribution_cash_line_user,caja.distribucion.line.user,model_distribution_cash_line,base.group_user,1,1,1,0
 access_distribution_cash_line_manager,caja.distribucion.line.manager,model_distribution_cash_line,account.group_account_manager,1,1,1,1
+access_logistics_cash_user,caja.logistica.user,model_logistics_cash,base.group_user,1,1,1,0
+access_logistics_cash_manager,caja.logistica.manager,model_logistics_cash,account.group_account_manager,1,1,1,1
+access_logistics_cash_line_user,caja.logistica.line.user,model_logistics_cash_line,base.group_user,1,1,1,0
+access_logistics_cash_line_manager,caja.logistica.line.manager,model_logistics_cash_line,account.group_account_manager,1,1,1,1
 access_payment_type_user,caja.chica.user,model_payment_type,base.group_user,1,1,1,0
 access_payment_type_manager,caja.chica.manager,model_payment_type,account.group_account_manager,1,1,1,1

@@ -19,7 +19,8 @@ export class CajaSelectionWidget extends Component {
             selectedType: null,
             stats: {
                 petty_cash: { total: 0, open: 0, balance: 0 },
-                distribution_cash: { total: 0, open: 0, balance: 0 }
+                distribution_cash: { total: 0, open: 0, balance: 0 },
+                logistics_cash: { total: 0, open: 0, balance: 0 }
             }
         });
 
@@ -29,7 +30,7 @@ export class CajaSelectionWidget extends Component {
     }
 
     /**
-     * Cargar estadísticas de ambos tipos de caja
+     * Cargar estadísticas de todos los tipos de caja
      */
     async loadStats() {
         try {
@@ -59,6 +60,19 @@ export class CajaSelectionWidget extends Component {
                 [[["responsible_id", "=", this.env.user.userId], ["state", "=", "open"]]]
             );
 
+            // Estadísticas de Caja de Logística
+            const logisticsCashStats = await this.orm.call(
+                "logistics.cash",
+                "search_count", 
+                [[["responsible_id", "=", this.env.user.userId]]]
+            );
+
+            const logisticsCashOpen = await this.orm.call(
+                "logistics.cash",
+                "search_count",
+                [[["responsible_id", "=", this.env.user.userId], ["state", "=", "open"]]]
+            );
+
             this.state.stats = {
                 petty_cash: { 
                     total: pettyCashStats, 
@@ -68,6 +82,11 @@ export class CajaSelectionWidget extends Component {
                 distribution_cash: { 
                     total: distributionCashStats, 
                     open: distributionCashOpen, 
+                    balance: 0 
+                },
+                logistics_cash: { 
+                    total: logisticsCashStats, 
+                    open: logisticsCashOpen, 
                     balance: 0 
                 }
             };
@@ -102,7 +121,7 @@ export class CajaSelectionWidget extends Component {
                 });
             }
         } else if (type === 'distribution_cash') {
-            // Abrir Caja de Distribución (ya no está en construcción)
+            // Abrir Caja de Distribución
             try {
                 await this.actionService.doAction('petty_cash.action_distribution_cash');
             } catch (error) {
@@ -112,6 +131,25 @@ export class CajaSelectionWidget extends Component {
                     name: _t("Caja de Distribución"),
                     type: 'ir.actions.act_window',
                     res_model: 'distribution.cash',
+                    view_mode: 'kanban,list,form',
+                    target: 'current',
+                    context: {
+                        'default_state': 'draft',
+                        'search_default_my_cajas': 1,
+                    }
+                });
+            }
+        } else if (type === 'logistics_cash') {
+            // Abrir Caja de Logística
+            try {
+                await this.actionService.doAction('petty_cash.action_logistics_cash');
+            } catch (error) {
+                console.error("Error al abrir Caja de Logística:", error);
+                // Fallback: abrir directamente
+                this.actionService.doAction({
+                    name: _t("Caja de Logística"),
+                    type: 'ir.actions.act_window',
+                    res_model: 'logistics.cash',
                     view_mode: 'kanban,list,form',
                     target: 'current',
                     context: {
@@ -158,6 +196,28 @@ export class CajaSelectionWidget extends Component {
                 name: _t("Nueva Caja de Distribución"),
                 type: 'ir.actions.act_window',
                 res_model: 'distribution.cash',
+                view_mode: 'form',
+                target: 'current',
+                context: {
+                    'default_state': 'draft',
+                }
+            });
+        }
+    }
+
+    /**
+     * Crear nueva caja de logística directamente
+     */
+    async onCreateLogisticsCash() {
+        try {
+            await this.actionService.doAction('petty_cash.action_logistics_cash_new');
+        } catch (error) {
+            console.error("Error al crear nueva caja de logística:", error);
+            // Fallback
+            this.actionService.doAction({
+                name: _t("Nueva Caja de Logística"),
+                type: 'ir.actions.act_window',
+                res_model: 'logistics.cash',
                 view_mode: 'form',
                 target: 'current',
                 context: {
@@ -236,14 +296,48 @@ export class CajaSelectionWidget extends Component {
     }
 
     /**
+     * Ver resumen de cajas de logística abiertas
+     */
+    async onViewOpenLogistics() {
+        try {
+            const openCajas = await this.orm.call(
+                "logistics.cash",
+                "search_count",
+                [[["state", "=", "open"]]]
+            );
+
+            if (openCajas > 0) {
+                await this.actionService.doAction('petty_cash.action_logistics_cash_open');
+            } else {
+                this.notification.add(
+                    _t("No hay cajas de logística abiertas actualmente."),
+                    {
+                        type: 'info',
+                        title: _t("Sin Cajas de Logística Abiertas")
+                    }
+                );
+            }
+        } catch (error) {
+            console.error("Error al consultar cajas de logística abiertas:", error);
+            this.notification.add(
+                _t("Error al consultar las cajas de logística abiertas."),
+                {
+                    type: 'danger',
+                    title: _t("Error")
+                }
+            );
+        }
+    }
+
+    /**
      * Ver análisis simple
      */
     async onViewSimpleAnalysis() {
         try {
             this.actionService.doAction({
-                name: _t("Movimientos de Distribución"),
+                name: _t("Movimientos de Logística"),
                 type: 'ir.actions.act_window',
-                res_model: 'distribution.cash.line',
+                res_model: 'logistics.cash.line',
                 view_mode: 'list',
                 context: {
                     'search_default_current_month': 1,

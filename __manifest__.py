@@ -27,6 +27,8 @@
         'views/caja_chica_menus.xml',
         'views/distribution_cash_views.xml',
         'views/distribution_cash_menus.xml',
+        'views/logistics_cash_views.xml',
+        'views/logistics_cash_menus.xml',
         'reports/paperformat.xml',
         'reports/peruanita_layout_background_horizontal.xml',
         'reports/caja_chica_report.xml',

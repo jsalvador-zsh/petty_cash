@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- Acción principal para Caja de Logística -->
+        <record id="action_logistics_cash" model="ir.actions.act_window">
+            <field name="name">Caja de Logística</field>
+            <field name="res_model">logistics.cash</field>
+            <field name="view_mode">kanban,list,form</field>
+            <field name="context">{
+                'default_state': 'draft',
+                'search_default_my_cajas': 1,
+            }</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    ¡Crea tu primera Caja de Logística!
+                </p>
+                <p>
+                    Las Cajas de Logística te permiten llevar un control detallado de gastos
+                    logísticos, almacenamiento y operaciones de manera organizada y profesional.
+                </p>
+            </field>
+        </record>
+
+        <!-- Acción para movimientos de Caja de Logística -->
+        <record id="action_logistics_cash_line" model="ir.actions.act_window">
+            <field name="name">Movimientos de Caja de Logística</field>
+            <field name="res_model">logistics.cash.line</field>
+            <field name="view_mode">list,form</field>
+            <field name="context">{}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    No hay movimientos de logística registrados
+                </p>
+                <p>
+                    Los movimientos se crean desde las Cajas de Logística correspondientes.
+                </p>
+            </field>
+        </record>
+
+        <!-- Submenús para Caja de Logística -->
+        <menuitem id="menu_logistics_cash_root" 
+                  name="Caja de Logística" 
+                  parent="menu_petty_cash_main" 
+                  sequence="30"/>
+
+        <menuitem id="menu_logistics_cash_cajas" 
+                  name="Mis Cajas de Logística" 
+                  parent="menu_logistics_cash_root" 
+                  sequence="10"
+                  action="action_logistics_cash"/>
+
+        <menuitem id="menu_logistics_cash_all" 
+                  name="Todas las Cajas de Logística" 
+                  parent="menu_logistics_cash_root" 
+                  sequence="20"
+                  action="action_logistics_cash"
+                  groups="account.group_account_manager"/>
+
+        <menuitem id="menu_logistics_cash_movements" 
+                  name="Movimientos de Logística" 
+                  parent="menu_logistics_cash_root" 
+                  sequence="30"
+                  action="action_logistics_cash_line"/>
+
+        <!-- Acción para crear nueva caja de logística desde el menú -->
+        <record id="action_logistics_cash_new" model="ir.actions.act_window">
+            <field name="name">Nueva Caja de Logística</field>
+            <field name="res_model">logistics.cash</field>
+            <field name="view_mode">form</field>
+            <field name="target">current</field>
+            <field name="context">{
+                'default_state': 'draft',
+            }</field>
+        </record>
+
+        <menuitem id="menu_logistics_cash_new" 
+                  name="Crear Nueva Caja de Logística" 
+                  parent="menu_logistics_cash_root" 
+                  sequence="5"
+                  action="action_logistics_cash_new"/>
+
+        <!-- Acción para cajas de logística abiertas -->
+        <record id="action_logistics_cash_open" model="ir.actions.act_window">
+            <field name="name">Cajas de Logística Abiertas</field>
+            <field name="res_model">logistics.cash</field>
+            <field name="view_mode">kanban,list,form</field>
+            <field name="domain">[('state', '=', 'open')]</field>
+            <field name="context">{
+                'search_default_open': 1,
+            }</field>
+        </record>
+
+        <menuitem id="menu_logistics_cash_open" 
+                  name="Cajas de Logística Abiertas" 
+                  parent="menu_petty_cash_reports" 
+                  sequence="50"
+                  action="action_logistics_cash_open"/>
+
+        <!-- Acción para resumen mensual de logística -->
+        <record id="action_logistics_cash_monthly" model="ir.actions.act_window">
+            <field name="name">Resumen Mensual Logística</field>
+            <field name="res_model">logistics.cash</field>
+            <field name="view_mode">list,form</field>
+            <field name="domain">[('date', '>=', (context_today().strftime('%Y-%m-01')))]</field>
+            <field name="context">{'search_default_group_by_responsible_id': 1}</field>
+        </record>
+
+        <menuitem id="menu_logistics_cash_monthly"
+                  name="Resumen Mensual Logística"
+                  parent="menu_petty_cash_reports"
+                  sequence="60"
+                  action="action_logistics_cash_monthly"/>
+
+        <!-- Reportes específicos de logística -->
+        <menuitem id="menu_logistics_cash_reports" 
+                  name="Reportes de Logística" 
+                  parent="menu_petty_cash_reports" 
+                  sequence="70"/>
+
+        <!-- Configuración específica de logística -->
+        <menuitem id="menu_logistics_cash_config" 
+                  name="Configuración Logística" 
+                  parent="menu_petty_cash_config" 
+                  sequence="30"
+                  groups="account.group_account_manager"/>
+
+    </data>
+</odoo>

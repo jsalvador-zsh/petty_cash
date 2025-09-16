@@ -144,3 +144,74 @@ class CajaChicaController(http.Controller):
                 'success': False,
                 'error': str(e)
             }
+
+    # ========== CONTROLADORES PARA CAJA DE LOGÍSTICA ==========
+
+    @http.route('/logistics_cash/dashboard_data', type='json', auth='user')
+    def get_logistics_dashboard_data(self):
+        """Obtener datos para el dashboard de caja de logística"""
+        user = request.env.user
+        LogisticsCash = request.env['logistics.cash']
+        
+        # Estadísticas del usuario actual
+        my_cajas = LogisticsCash.search([('responsible_id', '=', user.id)])
+        open_cajas = my_cajas.filtered(lambda c: c.state == 'open')
+        
+        data = {
+            'total_cajas': len(my_cajas),
+            'open_cajas': len(open_cajas),
+            'total_balance': sum(open_cajas.mapped('current_balance')),
+            'monthly_cajas': len(my_cajas.filtered(
+                lambda c: c.date.month == fields.Date.today().month
+            ))
+        }
+        
+        return data
+
+    @http.route('/logistics_cash/quick_stats', type='json', auth='user')
+    def get_logistics_quick_stats(self):
+        """Estadísticas rápidas para caja de logística"""
+        LogisticsCash = request.env['logistics.cash']
+        
+        # Contar cajas por estado
+        domain_base = [('responsible_id', '=', request.env.user.id)]
+        
+        stats = {
+            'draft': LogisticsCash.search_count(domain_base + [('state', '=', 'draft')]),
+            'open': LogisticsCash.search_count(domain_base + [('state', '=', 'open')]),
+            'closed': LogisticsCash.search_count(domain_base + [('state', '=', 'closed')]),
+            'total': LogisticsCash.search_count(domain_base)
+        }
+        
+        # Saldo total de cajas abiertas
+        open_cajas = LogisticsCash.search(domain_base + [('state', '=', 'open')])
+        stats['total_balance'] = sum(open_cajas.mapped('current_balance'))
+        
+        return stats
+
+    @http.route('/logistics_cash/create_quick', type='json', auth='user')
+    def create_quick_logistics(self, **kwargs):
+        """Crear una caja de logística rápidamente"""
+        try:
+            LogisticsCash = request.env['logistics.cash']
+            
+            vals = {
+                'responsible_id': request.env.user.id,
+                'initial_amount': kwargs.get('initial_amount', 0.0),
+                'state': 'draft'
+            }
+            
+            caja = LogisticsCash.create(vals)
+            
+            return {
+                'success': True,
+                'caja_id': caja.id,
+                'name': caja.name,
+                'message': f'Caja de Logística {caja.name} creada exitosamente'
+            }
+            
+        except Exception as e:
+            return {
+                'success': False,
+                'error': str(e)
+            }
