@@ -46,11 +46,11 @@
 
         <!-- Menú principal de la aplicación -->
         <menuitem id="menu_petty_cash_main" 
-                  name="Caja Chica" 
+                  name="Gestión de Cajas" 
                   sequence="90"
-                  groups="account.group_account_manager"
+                  groups="petty_cash.group_cash_user"
                   web_icon="petty_cash,static/description/icon.png"
-                  action="action_caja_selection_widget"/>
+                  action="petty_cash.action_caja_selection_widget"/>
 
         <!-- Submenús -->
         <menuitem id="menu_petty_cash_root" 
@@ -69,7 +69,7 @@
                   parent="menu_petty_cash_root" 
                   sequence="20"
                   action="action_petty_cash"
-                  groups="account.group_account_manager"/>
+                  groups="petty_cash.group_cash_manager"/>
 
         <menuitem id="menu_petty_cash_movements" 
                   name="Movimientos" 
@@ -82,7 +82,7 @@
                   name="Configuración" 
                   parent="menu_petty_cash_main" 
                   sequence="90"
-                  groups="account.group_account_manager"/>
+                  groups="petty_cash.group_cash_manager"/>
 
         <!-- Acción para crear nueva caja chica desde el menú -->
         <record id="action_petty_cash_new" model="ir.actions.act_window">
@@ -125,23 +125,42 @@
                   action="action_petty_cash_open"/>
 
         <!-- Acción para resumen mensual -->
-<record id="action_petty_cash_monthly" model="ir.actions.act_window">
-    <field name="name">Resumen Mensual</field>
-    <field name="res_model">petty.cash</field>
-    <field name="view_mode">list,form</field>
-<field name="domain">[('date', '>=', (context_today().strftime('%Y-%m-01')))]</field>
+        <record id="action_petty_cash_monthly" model="ir.actions.act_window">
+            <field name="name">Resumen Mensual</field>
+            <field name="res_model">petty.cash</field>
+            <field name="view_mode">list,form</field>
+            <field name="domain">[('date', '>=', (context_today().strftime('%Y-%m-01')))]</field>
+            <field name="context">{'search_default_group_by_responsible_id': 1}</field>
+        </record>
 
+        <menuitem id="menu_petty_cash_monthly"
+                  name="Resumen Mensual"
+                  parent="menu_petty_cash_reports"
+                  sequence="20"
+                  action="action_petty_cash_monthly"/>
 
-    <field name="context">{'search_default_group_by_responsible_id': 1}</field>
-</record>
+        <!-- Menú para tipos de pago -->
+        <record id="action_payment_types" model="ir.actions.act_window">
+            <field name="name">Tipos de Pago</field>
+            <field name="res_model">payment.type</field>
+            <field name="view_mode">list,form</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    ¡Configura los tipos de pago!
+                </p>
+                <p>
+                    Define los diferentes tipos de pago que se pueden utilizar
+                    como monto inicial en las cajas (Efectivo, Transferencia, etc.).
+                </p>
+            </field>
+        </record>
 
-<menuitem id="menu_petty_cash_monthly"
-          name="Resumen Mensual"
-          parent="menu_petty_cash_reports"
-          sequence="20"
-          action="action_petty_cash_monthly"/>
-
-
+        <menuitem id="menu_payment_types"
+                  name="Tipos de Pago"
+                  parent="menu_petty_cash_config"
+                  sequence="10"
+                  action="action_payment_types"
+                  groups="petty_cash.group_cash_manager"/>
 
     </data>
 </odoo>

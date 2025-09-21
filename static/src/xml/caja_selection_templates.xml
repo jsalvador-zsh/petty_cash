@@ -35,14 +35,18 @@
                                     </p>
 
                                     <!-- Stats de Caja Chica -->
-                                    <div class="row mb-3">
-                                        <div class="col-6">
-                                            <small class="text-muted">Total:</small>
+                                    <div class="row mb-3 text-center">
+                                        <div class="col-4">
+                                            <small class="text-muted d-block">Total:</small>
                                             <div class="fw-bold text-primary" t-esc="state.stats.petty_cash.total"/>
                                         </div>
-                                        <div class="col-6">
-                                            <small class="text-muted">Abiertas:</small>
+                                        <div class="col-4">
+                                            <small class="text-muted d-block">Abiertas:</small>
                                             <div class="fw-bold text-success" t-esc="state.stats.petty_cash.open"/>
+                                        </div>
+                                        <div class="col-4">
+                                            <small class="text-muted d-block">Cerradas:</small>
+                                            <div class="fw-bold text-danger" t-esc="state.stats.petty_cash.closed"/>
                                         </div>
                                     </div>
                                     
@@ -99,14 +103,18 @@
                                     </p>
 
                                     <!-- Stats de Caja Distribución -->
-                                    <div class="row mb-3">
-                                        <div class="col-6">
-                                            <small class="text-muted">Total:</small>
-                                            <div class="fw-bold text-warning" t-esc="state.stats.distribution_cash.total"/>
+                                    <div class="row mb-3 text-center">
+                                        <div class="col-4">
+                                            <small class="text-muted d-block">Total:</small>
+                                            <div class="fw-bold text-primary" t-esc="state.stats.distribution_cash.total"/>
                                         </div>
-                                        <div class="col-6">
-                                            <small class="text-muted">Abiertas:</small>
+                                        <div class="col-4">
+                                            <small class="text-muted d-block">Abiertas:</small>
                                             <div class="fw-bold text-success" t-esc="state.stats.distribution_cash.open"/>
+                                        </div>
+                                        <div class="col-4">
+                                            <small class="text-muted d-block">Cerradas:</small>
+                                            <div class="fw-bold text-danger" t-esc="state.stats.distribution_cash.closed"/>
                                         </div>
                                     </div>
                                     
@@ -162,14 +170,18 @@
                                     </p>
 
                                     <!-- Stats de Caja Logística -->
-                                    <div class="row mb-3">
-                                        <div class="col-6">
-                                            <small class="text-muted">Total:</small>
-                                            <div class="fw-bold text-info" t-esc="state.stats.logistics_cash.total"/>
+                                   <div class="row mb-3 text-center">
+                                        <div class="col-4">
+                                            <small class="text-muted d-block">Total:</small>
+                                            <div class="fw-bold text-primary" t-esc="state.stats.logistics_cash.total"/>
                                         </div>
-                                        <div class="col-6">
-                                            <small class="text-muted">Abiertas:</small>
+                                        <div class="col-4">
+                                            <small class="text-muted d-block">Abiertas:</small>
                                             <div class="fw-bold text-success" t-esc="state.stats.logistics_cash.open"/>
+                                        </div>
+                                        <div class="col-4">
+                                            <small class="text-muted d-block">Cerradas:</small>
+                                            <div class="fw-bold text-danger" t-esc="state.stats.logistics_cash.closed"/>
                                         </div>
                                     </div>
                                     

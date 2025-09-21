@@ -55,7 +55,7 @@
                   parent="menu_logistics_cash_root" 
                   sequence="20"
                   action="action_logistics_cash"
-                  groups="account.group_account_manager"/>
+                  groups="petty_cash.group_cash_manager"/>
 
         <menuitem id="menu_logistics_cash_movements" 
                   name="Movimientos de Logística" 
@@ -111,19 +111,6 @@
                   parent="menu_petty_cash_reports"
                   sequence="60"
                   action="action_logistics_cash_monthly"/>
-
-        <!-- Reportes específicos de logística -->
-        <menuitem id="menu_logistics_cash_reports" 
-                  name="Reportes de Logística" 
-                  parent="menu_petty_cash_reports" 
-                  sequence="70"/>
-
-        <!-- Configuración específica de logística -->
-        <menuitem id="menu_logistics_cash_config" 
-                  name="Configuración Logística" 
-                  parent="menu_petty_cash_config" 
-                  sequence="30"
-                  groups="account.group_account_manager"/>
 
     </data>
 </odoo>

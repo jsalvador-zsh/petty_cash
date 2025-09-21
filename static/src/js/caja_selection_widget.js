@@ -18,9 +18,9 @@ export class CajaSelectionWidget extends Component {
             showSelection: true,
             selectedType: null,
             stats: {
-                petty_cash: { total: 0, open: 0, balance: 0 },
-                distribution_cash: { total: 0, open: 0, balance: 0 },
-                logistics_cash: { total: 0, open: 0, balance: 0 }
+                petty_cash: { total: 0, open: 0, closed: 0, balance: 0 },
+                distribution_cash: { total: 0, open: 0, closed: 0, balance: 0 },
+                logistics_cash: { total: 0, open: 0, closed: 0, balance: 0 }
             }
         });
 
@@ -30,68 +30,209 @@ export class CajaSelectionWidget extends Component {
     }
 
     /**
+     * Obtener el ID del usuario actual
+     */
+    async getCurrentUserId() {
+        try {
+            const result = await this.orm.call("res.users", "search_read", [
+                [["id", "=", this.env.services.user.userId || this.env.user.userId]],
+                ["id"]
+            ]);
+            return result[0]?.id || null;
+        } catch (error) {
+            // Fallback: usar búsqueda directa
+            try {
+                const currentUser = await this.orm.call("res.users", "get_current_user", []);
+                return currentUser.id;
+            } catch (fallbackError) {
+                console.error("No se pudo obtener el usuario actual:", fallbackError);
+                return null;
+            }
+        }
+    }
+
+    /**
      * Cargar estadísticas de todos los tipos de caja
      */
     async loadStats() {
         try {
+            console.log("Cargando estadísticas...");
+            
+            // Obtener el ID del usuario actual usando diferentes métodos
+            let currentUserId = null;
+            try {
+                // Método 1: Usar session
+                currentUserId = this.env.services?.user?.userId;
+            } catch (e) {
+                console.log("Método 1 falló:", e.message);
+            }
+
+            if (!currentUserId) {
+                try {
+                    // Método 2: Usar contexto
+                    currentUserId = this.env.context?.uid;
+                } catch (e) {
+                    console.log("Método 2 falló:", e.message);
+                }
+            }
+
+            if (!currentUserId) {
+                // Método 3: Consultar directamente a la base de datos
+                try {
+                    const userInfo = await this.orm.call("res.users", "context_get", []);
+                    currentUserId = userInfo.uid;
+                } catch (e) {
+                    console.log("Método 3 falló:", e.message);
+                }
+            }
+
+            console.log("User ID obtenido:", currentUserId);
+
+            if (!currentUserId) {
+                console.error("No se pudo obtener el ID del usuario");
+                // Si no podemos obtener el usuario, mostrar todas las cajas sin filtro
+                await this.loadStatsWithoutUserFilter();
+                return;
+            }
+
             // Estadísticas de Caja Chica
-            const pettyCashStats = await this.orm.call(
+            const pettyCashTotal = await this.orm.call(
                 "petty.cash",
                 "search_count",
-                [[["responsible_id", "=", this.env.user.userId]]]
+                [[["responsible_id", "=", currentUserId]]]
             );
             
             const pettyCashOpen = await this.orm.call(
                 "petty.cash", 
                 "search_count",
-                [[["responsible_id", "=", this.env.user.userId], ["state", "=", "open"]]]
+                [[["responsible_id", "=", currentUserId], ["state", "=", "open"]]]
             );
 
+            const pettyCashClosed = await this.orm.call(
+                "petty.cash", 
+                "search_count",
+                [[["responsible_id", "=", currentUserId], ["state", "=", "closed"]]]
+            );
+
+            console.log("Petty Cash Stats:", {total: pettyCashTotal, open: pettyCashOpen, closed: pettyCashClosed});
+
             // Estadísticas de Caja de Distribución
-            const distributionCashStats = await this.orm.call(
+            const distributionCashTotal = await this.orm.call(
                 "distribution.cash",
                 "search_count", 
-                [[["responsible_id", "=", this.env.user.userId]]]
+                [[["responsible_id", "=", currentUserId]]]
             );
 
             const distributionCashOpen = await this.orm.call(
                 "distribution.cash",
                 "search_count",
-                [[["responsible_id", "=", this.env.user.userId], ["state", "=", "open"]]]
+                [[["responsible_id", "=", currentUserId], ["state", "=", "open"]]]
             );
+
+            const distributionCashClosed = await this.orm.call(
+                "distribution.cash",
+                "search_count",
+                [[["responsible_id", "=", currentUserId], ["state", "=", "closed"]]]
+            );
+
+            console.log("Distribution Cash Stats:", {total: distributionCashTotal, open: distributionCashOpen, closed: distributionCashClosed});
 
             // Estadísticas de Caja de Logística
-            const logisticsCashStats = await this.orm.call(
-                "logistics.cash",
-                "search_count", 
-                [[["responsible_id", "=", this.env.user.userId]]]
-            );
+            let logisticsCashTotal = 0, logisticsCashOpen = 0, logisticsCashClosed = 0;
+            try {
+                logisticsCashTotal = await this.orm.call(
+                    "logistics.cash",
+                    "search_count", 
+                    [[["responsible_id", "=", currentUserId]]]
+                );
 
-            const logisticsCashOpen = await this.orm.call(
-                "logistics.cash",
-                "search_count",
-                [[["responsible_id", "=", this.env.user.userId], ["state", "=", "open"]]]
-            );
+                logisticsCashOpen = await this.orm.call(
+                    "logistics.cash",
+                    "search_count",
+                    [[["responsible_id", "=", currentUserId], ["state", "=", "open"]]]
+                );
 
+                logisticsCashClosed = await this.orm.call(
+                    "logistics.cash",
+                    "search_count",
+                    [[["responsible_id", "=", currentUserId], ["state", "=", "closed"]]]
+                );
+            } catch (logError) {
+                console.log("Modelo logistics.cash no disponible aún:", logError.message);
+            }
+
+            console.log("Logistics Cash Stats:", {total: logisticsCashTotal, open: logisticsCashOpen, closed: logisticsCashClosed});
+
+            // Actualizar el estado con todas las estadísticas
             this.state.stats = {
                 petty_cash: { 
-                    total: pettyCashStats, 
-                    open: pettyCashOpen, 
+                    total: pettyCashTotal || 0, 
+                    open: pettyCashOpen || 0, 
+                    closed: pettyCashClosed || 0,
                     balance: 0 
                 },
                 distribution_cash: { 
-                    total: distributionCashStats, 
-                    open: distributionCashOpen, 
+                    total: distributionCashTotal || 0, 
+                    open: distributionCashOpen || 0, 
+                    closed: distributionCashClosed || 0,
                     balance: 0 
                 },
                 logistics_cash: { 
-                    total: logisticsCashStats, 
-                    open: logisticsCashOpen, 
+                    total: logisticsCashTotal || 0, 
+                    open: logisticsCashOpen || 0, 
+                    closed: logisticsCashClosed || 0,
                     balance: 0 
                 }
             };
+
+            console.log("Estadísticas finales cargadas:", this.state.stats);
+            
         } catch (error) {
             console.error("Error loading stats:", error);
+            // Establecer valores por defecto en caso de error
+            this.state.stats = {
+                petty_cash: { total: 0, open: 0, closed: 0, balance: 0 },
+                distribution_cash: { total: 0, open: 0, closed: 0, balance: 0 },
+                logistics_cash: { total: 0, open: 0, closed: 0, balance: 0 }
+            };
+        }
+    }
+
+    /**
+     * Cargar estadísticas sin filtro de usuario (fallback)
+     */
+    async loadStatsWithoutUserFilter() {
+        try {
+            console.log("Cargando estadísticas sin filtro de usuario...");
+
+            // Estadísticas totales sin filtro
+            const pettyCashTotal = await this.orm.call("petty.cash", "search_count", [[]]);
+            const pettyCashOpen = await this.orm.call("petty.cash", "search_count", [[["state", "=", "open"]]]);
+            const pettyCashClosed = await this.orm.call("petty.cash", "search_count", [[["state", "=", "closed"]]]);
+
+            const distributionCashTotal = await this.orm.call("distribution.cash", "search_count", [[]]);
+            const distributionCashOpen = await this.orm.call("distribution.cash", "search_count", [[["state", "=", "open"]]]);
+            const distributionCashClosed = await this.orm.call("distribution.cash", "search_count", [[["state", "=", "closed"]]]);
+
+            let logisticsCashTotal = 0, logisticsCashOpen = 0, logisticsCashClosed = 0;
+            try {
+                logisticsCashTotal = await this.orm.call("logistics.cash", "search_count", [[]]);
+                logisticsCashOpen = await this.orm.call("logistics.cash", "search_count", [[["state", "=", "open"]]]);
+                logisticsCashClosed = await this.orm.call("logistics.cash", "search_count", [[["state", "=", "closed"]]]);
+            } catch (logError) {
+                console.log("Modelo logistics.cash no disponible:", logError.message);
+            }
+
+            this.state.stats = {
+                petty_cash: { total: pettyCashTotal, open: pettyCashOpen, closed: pettyCashClosed, balance: 0 },
+                distribution_cash: { total: distributionCashTotal, open: distributionCashOpen, closed: distributionCashClosed, balance: 0 },
+                logistics_cash: { total: logisticsCashTotal, open: logisticsCashOpen, closed: logisticsCashClosed, balance: 0 }
+            };
+
+            console.log("Estadísticas cargadas (sin filtro):", this.state.stats);
+            
+        } catch (error) {
+            console.error("Error en loadStatsWithoutUserFilter:", error);
         }
     }
 
@@ -235,7 +376,7 @@ export class CajaSelectionWidget extends Component {
             const openCajas = await this.orm.call(
                 "petty.cash",
                 "search_count",
-                [[["state", "=", "open"]]]
+                [[["state", "=", "open"], ["responsible_id", "=", this.user.userId]]]
             );
 
             if (openCajas > 0) {
@@ -269,7 +410,7 @@ export class CajaSelectionWidget extends Component {
             const openCajas = await this.orm.call(
                 "distribution.cash",
                 "search_count",
-                [[["state", "=", "open"]]]
+                [[["state", "=", "open"], ["responsible_id", "=", this.user.userId]]]
             );
 
             if (openCajas > 0) {
@@ -303,7 +444,7 @@ export class CajaSelectionWidget extends Component {
             const openCajas = await this.orm.call(
                 "logistics.cash",
                 "search_count",
-                [[["state", "=", "open"]]]
+                [[["state", "=", "open"], ["responsible_id", "=", this.user.userId]]]
             );
 
             if (openCajas > 0) {

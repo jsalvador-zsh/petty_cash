@@ -55,7 +55,7 @@
                   parent="menu_distribution_cash_root" 
                   sequence="20"
                   action="action_distribution_cash"
-                  groups="account.group_account_manager"/>
+                  groups="group_cash_manager"/>
 
         <menuitem id="menu_distribution_cash_movements" 
                   name="Movimientos de Distribución" 
@@ -111,19 +111,6 @@
                   parent="menu_petty_cash_reports"
                   sequence="40"
                   action="action_distribution_cash_monthly"/>
-
-        <!-- Reportes específicos de distribución -->
-        <menuitem id="menu_distribution_cash_reports" 
-                  name="Reportes de Distribución" 
-                  parent="menu_petty_cash_reports" 
-                  sequence="50"/>
-
-        <!-- Configuración específica de distribución -->
-        <menuitem id="menu_distribution_cash_config" 
-                  name="Configuración Distribución" 
-                  parent="menu_petty_cash_config" 
-                  sequence="20"
-                  groups="account.group_account_manager"/>
 
     </data>
 </odoo>

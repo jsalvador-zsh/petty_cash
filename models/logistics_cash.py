@@ -1,5 +1,5 @@
 from odoo import models, fields, api
-from odoo.exceptions import ValidationError
+from odoo.exceptions import ValidationError, UserError
 from datetime import date
 
 class LogisticsCash(models.Model):
@@ -108,25 +108,117 @@ class LogisticsCash(models.Model):
             record.total_expense = sum(expense_lines.mapped('amount'))
             record.current_balance = record.total_income - record.total_expense
 
+    # ========== VALIDACIONES ==========
+    
+    @api.constrains('initial_amount')
+    def _check_initial_amount(self):
+        for record in self:
+            if record.initial_amount < 0:
+                raise ValidationError("El monto inicial no puede ser negativo.")
+
+    @api.constrains('state', 'initial_amount')
+    def _check_open_requirements(self):
+        for record in self:
+            if record.state == 'open' and record.initial_amount <= 0:
+                raise ValidationError(
+                    "No se puede abrir una caja sin un monto inicial mayor a cero. "
+                    f"Monto actual: {record.initial_amount}"
+                )
+
+    @api.constrains('current_balance', 'state')
+    def _check_close_requirements(self):
+        for record in self:
+            if record.state == 'closed' and record.current_balance < 0:
+                raise ValidationError(
+                    "No se puede cerrar una caja con saldo negativo. "
+                    f"Saldo actual: {record.current_balance}"
+                )
+
+    # ========== MÉTODOS DE ACCIÓN ==========
+
     def action_open(self):
-        self.state = 'open'
+        """Abrir caja con validaciones"""
+        for record in self:
+            if record.initial_amount <= 0:
+                raise UserError(
+                    f"No se puede abrir la caja {record.name}. "
+                    "El monto inicial debe ser mayor a cero."
+                )
+            if record.state != 'draft':
+                raise UserError(f"Solo se pueden abrir cajas en estado borrador.")
+            
+            record.write({
+                'state': 'open',
+            })
+            record.message_post(
+                body=f"Caja de Logística {record.name} abierta con monto inicial: {record.initial_amount}",
+                message_type='notification'
+            )
 
     def action_close(self):
-        if self.current_balance < 0:
-            raise ValidationError("No se puede cerrar una caja de logística con saldo negativo.")
-        self.state = 'closed'
+        """Cerrar caja con validaciones"""
+        for record in self:
+            if record.state != 'open':
+                raise UserError("Solo se pueden cerrar cajas abiertas.")
+            if record.current_balance < 0:
+                raise UserError(
+                    f"No se puede cerrar la caja {record.name} con saldo negativo. "
+                    f"Saldo actual: {record.current_balance}"
+                )
+            
+            record.write({'state': 'closed'})
+            record.message_post(
+                body=f"Caja de Logística {record.name} cerrada con saldo final: {record.current_balance}",
+                message_type='notification'
+            )
 
     def action_cancel(self):
-        self.state = 'cancelled'
+        """Cancelar caja con validaciones"""
+        for record in self:
+            if record.state == 'closed':
+                raise UserError("No se puede cancelar una caja que ya está cerrada.")
+            
+            record.write({'state': 'cancelled'})
+            record.message_post(
+                body=f"Caja de Logística {record.name} cancelada",
+                message_type='notification'
+            )
 
     def action_reset_to_draft(self):
-        self.state = 'draft'
+        """Restablecer a borrador con validaciones"""
+        for record in self:
+            if record.state == 'closed':
+                raise UserError("No se puede restablecer a borrador una caja cerrada.")
+            
+            record.write({'state': 'draft'})
+            record.message_post(
+                body=f"Caja de Logística {record.name} restablecida a borrador",
+                message_type='notification'
+            )
         
     def action_recalculate_balances(self):
         """Método para recalcular todos los saldos de las líneas"""
-        for line in self.line_ids.sorted('sequence'):
-            line._compute_balance()
+        for record in self:
+            if record.state == 'closed':
+                raise UserError("No se pueden recalcular saldos en una caja cerrada.")
+            
+            for line in record.line_ids.sorted('sequence'):
+                line._compute_balance()
         return True
+
+    # ========== RESTRICCIONES DE ELIMINACIÓN ==========
+    
+    def unlink(self):
+        """Prevenir eliminación de cajas abiertas o cerradas"""
+        for record in self:
+            if record.state in ('open', 'closed'):
+                raise UserError(
+                    f"No se puede eliminar la caja {record.name} en estado '{record.state}'. "
+                    "Solo se pueden eliminar cajas en estado 'borrador' o 'cancelada'."
+                )
+        return super(LogisticsCash, self).unlink()
+
+    # ========== OTROS MÉTODOS ==========
 
     @api.model
     def action_logistics_cash_monthly(self):
@@ -218,6 +310,24 @@ class LogisticsCashLine(models.Model):
         string='Adjuntos'
     )
 
+    # ========== VALIDACIONES PARA LÍNEAS ==========
+    
+    @api.constrains('amount')
+    def _check_amount(self):
+        for line in self:
+            if line.amount <= 0:
+                raise ValidationError("El monto debe ser mayor a cero.")
+
+    @api.constrains('logistics_cash_id')
+    def _check_cash_state(self):
+        for line in self:
+            if line.logistics_cash_id.state == 'closed':
+                raise ValidationError(
+                    "No se pueden agregar o modificar movimientos en una caja cerrada."
+                )
+
+    # ========== MÉTODOS COMPUTADOS ==========
+
     @api.depends('partner_id')
     def _compute_partner_name(self):
         for line in self:
@@ -260,3 +370,15 @@ class LogisticsCashLine(models.Model):
     def _onchange_partner_id(self):
         if self.partner_id:
             self.partner_name = self.partner_id.name
+
+    # ========== RESTRICCIONES DE ELIMINACIÓN PARA LÍNEAS ==========
+    
+    def unlink(self):
+        """Prevenir eliminación de líneas en cajas cerradas"""
+        for line in self:
+            if line.logistics_cash_id.state == 'closed':
+                raise UserError(
+                    f"No se pueden eliminar movimientos de la caja {line.logistics_cash_id.name} "
+                    "porque está cerrada."
+                )
+        return super(LogisticsCashLine, self).unlink()
