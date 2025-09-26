@@ -12,10 +12,9 @@ class DistributionCash(models.Model):
     # Campos básicos
     name = fields.Char(
         string='Número',
-        required=True,
         copy=False,
         readonly=True,
-        default=lambda self: self._get_next_sequence()
+        default='Borrador'
     )
     company_id = fields.Many2one(
         'res.company',
@@ -90,13 +89,24 @@ class DistributionCash(models.Model):
     )
 
     @api.model
+    def create(self, vals):
+        """Crear registro en borrador sin secuencia"""
+        # No asignar secuencia en la creación, usar 'Borrador'
+        if 'name' not in vals or not vals.get('name'):
+            vals['name'] = 'Borrador'
+        return super(DistributionCash, self).create(vals)
+
     def _get_next_sequence(self):
+        """Obtener la siguiente secuencia disponible"""
         return self.env['ir.sequence'].next_by_code('distribution.cash') or 'DIST/001'
 
-    @api.depends('name', 'date', 'responsible_id')
+    @api.depends('name', 'date', 'responsible_id', 'state')
     def _compute_display_name(self):
         for record in self:
-            record.display_name = f"{record.name} - {record.date} ({record.responsible_id.name})"
+            if record.state == 'draft':
+                record.display_name = f"Borrador - {record.date} ({record.responsible_id.name})"
+            else:
+                record.display_name = f"{record.name} - {record.date} ({record.responsible_id.name})"
 
     @api.depends('line_ids.amount', 'initial_amount')
     def _compute_totals(self):
@@ -137,7 +147,7 @@ class DistributionCash(models.Model):
     # ========== MÉTODOS DE ACCIÓN ==========
 
     def action_open(self):
-        """Abrir caja con validaciones"""
+        """Abrir caja con validaciones y asignar secuencia"""
         for record in self:
             if record.initial_amount <= 0:
                 raise UserError(
@@ -146,6 +156,10 @@ class DistributionCash(models.Model):
                 )
             if record.state != 'draft':
                 raise UserError(f"Solo se pueden abrir cajas en estado borrador.")
+            
+            # Asignar secuencia al abrir la caja
+            if record.name == 'Borrador':
+                record.name = record._get_next_sequence()
             
             record.write({'state': 'open'})
             record.message_post(
@@ -188,9 +202,13 @@ class DistributionCash(models.Model):
             if record.state == 'closed':
                 raise UserError("No se puede restablecer a borrador una caja cerrada.")
             
-            record.write({'state': 'draft'})
+            # Restablecer a 'Borrador' si se vuelve a draft
+            record.write({
+                'state': 'draft',
+                'name': 'Borrador'
+            })
             record.message_post(
-                body=f"Caja de Distribución {record.name} restablecida a borrador",
+                body=f"Caja de Distribución restablecida a borrador",
                 message_type='notification'
             )
         

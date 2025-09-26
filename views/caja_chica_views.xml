@@ -37,11 +37,11 @@
                     
                     <sheet>
                         <div class="oe_title">
-                            <h1>
-                                <field name="name" readonly="1"/>
+                            <span class="o_form_label" invisible="state in ('draft', 'cancelled')">Caja Chica </span>
+                            <h1 class="d-flex">
+                                <field name="name" readonly="1" />
                             </h1>
                         </div>
-                        
                         <group>
                             <group string="Información General">
                                 <field name="date" readonly="state == 'closed'"/>
