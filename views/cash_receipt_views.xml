@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- Vista Tree de Recibos de Constancia -->
+        <record id="view_cash_receipt_list" model="ir.ui.view">
+            <field name="name">cash.receipt.list</field>
+            <field name="model">cash.receipt</field>
+            <field name="arch" type="xml">
+                <list string="Recibos de Constancia" decoration-success="state=='confirmed'"
+                    decoration-muted="state=='cancelled'" decoration-info="state=='draft'">
+                    <field name="name" />
+                    <field name="date" />
+                    <field name="partner_id" />
+                    <field name="area" widget="badge" />
+                    <field name="amount" sum="Total Entregado" />
+                    <field name="concept" />
+                    <field name="created_by_id" />
+                    <field name="state" widget="badge" decoration-success="state=='confirmed'"
+                        decoration-muted="state=='cancelled'" decoration-info="state=='draft'" />
+                    <field name="company_id" groups="base.group_multi_company" />
+                </list>
+            </field>
+        </record>
+
+        <!-- Vista Form de Recibos de Constancia -->
+        <record id="view_cash_receipt_form" model="ir.ui.view">
+            <field name="name">cash.receipt.form</field>
+            <field name="model">cash.receipt</field>
+            <field name="arch" type="xml">
+                <form string="Recibo de Constancia por Entrega de Efectivo">
+                    <header>
+                        <button name="action_confirm" string="Confirmar Recibo" type="object"
+                            class="btn-primary" invisible="state != 'draft'"
+                            help="Confirmar la entrega de efectivo y asignar número de secuencia" />
+                        <button name="action_cancel" string="Cancelar" type="object"
+                            class="btn-danger" invisible="state == 'cancelled'"
+                            confirm="¿Está seguro de cancelar este recibo?" />
+                        <button name="action_reset_to_draft" string="Restablecer a Borrador"
+                            type="object" invisible="state == 'draft'"
+                            help="Restablecerá el estado a borrador y el número volverá a ser 'Borrador'" />
+                        <field name="state" widget="statusbar" statusbar_visible="draft,confirmed" />
+                    </header>
+
+                    <sheet>
+                        <div class="oe_title">
+                            <span class="o_form_label" invisible="state in ('draft', 'cancelled')">Recibo
+                                de Constancia </span>
+                            <h1 class="d-flex">
+                                <field name="name" readonly="1" />
+                            </h1>
+                        </div>
+                        <group>
+                            <group string="Información General">
+                                <field name="date" readonly="state == 'confirmed'" />
+                                <field name="area" readonly="state == 'confirmed'" widget="radio" />
+                                <field name="company_id" groups="base.group_multi_company"
+                                    readonly="1" />
+                            </group>
+                            <group string="Personas Involucradas">
+                                <field name="partner_id" readonly="state == 'confirmed'"
+                                    options="{'no_create': True, 'no_edit': True}"
+                                    decoration-info="area == 'admin_gerencia'"
+                                    placeholder="Requerido para Admin. Gerencia" />
+                                <field name="created_by_id" readonly="1" />
+                            </group>
+                        </group>
+
+                        <group>
+                            <group string="Información Financiera">
+                                <field name="amount" readonly="state == 'confirmed'"
+                                    widget="monetary" options="{'currency_field': 'currency_id'}" />
+                                <field name="currency_id" invisible="1" />
+                            </group>
+                        </group>
+                        <group string="Detalles">
+                            <field name="concept" readonly="state == 'confirmed'"
+                                decoration-info="area == 'admin_gerencia'"
+                                placeholder="Requerido para Admin. Gerencia - Describa el motivo de la entrega de efectivo..." />
+                        </group>
+                        <group string="Observaciones">
+                            <field name="notes" readonly="state == 'confirmed'"
+                                placeholder="Notas adicionales (opcional)..." />
+                        </group>
+                    </sheet>
+                    <chatter />
+                </form>
+            </field>
+        </record>
+
+        <!-- Vista Kanban de Recibos de Constancia -->
+        <record id="view_cash_receipt_kanban" model="ir.ui.view">
+            <field name="name">cash.receipt.kanban</field>
+            <field name="model">cash.receipt</field>
+            <field name="arch" type="xml">
+                <kanban class="o_kanban_mobile" default_group_by="area">
+                    <field name="name" />
+                    <field name="date" />
+                    <field name="partner_id" />
+                    <field name="amount" />
+                    <field name="area" />
+                    <field name="state" />
+                    <field name="currency_id" />
+                    <templates>
+                        <t t-name="kanban-box">
+                            <div class="oe_kanban_card oe_kanban_global_click">
+                                <div class="oe_kanban_content">
+                                    <div class="row">
+                                        <div class="col-7">
+                                            <strong>
+                                                <field name="name" />
+                                                <t t-if="record.state.raw_value == 'draft'">
+                                                    <small class="text-muted"> (Sin número)</small>
+                                                </t>
+                                            </strong>
+                                        </div>
+                                        <div class="col-5 text-right">
+                                            <field name="state" widget="label_selection"
+                                                options="{'classes': {'draft': 'info', 'confirmed': 'success', 'cancelled': 'danger'}}" />
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-12">
+                                            <i class="fa fa-user me-2" />
+                                            <t t-if="record.partner_id.value">
+                                                <field name="partner_id" />
+                                            </t>
+                                            <t t-else="">
+                                                <span class="text-muted">Sin especificar</span>
+                                            </t>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <i class="fa fa-calendar me-2" />
+                                            <field name="date" />
+                                        </div>
+                                        <div class="col-6 text-right">
+                                            <strong>
+                                                <field name="amount" widget="monetary"
+                                                    options="{'currency_field': 'currency_id'}" />
+                                            </strong>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-12">
+                                            <span class="badge badge-info">
+                                                <t t-if="record.area.raw_value == 'logistica'">
+                                                    Logística</t>
+                                                <t t-if="record.area.raw_value == 'admin_gerencia'">Admin.
+                                                    Gerencia</t>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </t>
+                    </templates>
+                </kanban>
+            </field>
+        </record>
+
+        <!-- Vista Search de Recibos de Constancia -->
+        <record id="view_cash_receipt_search" model="ir.ui.view">
+            <field name="name">cash.receipt.search</field>
+            <field name="model">cash.receipt</field>
+            <field name="arch" type="xml">
+                <search string="Buscar Recibos de Constancia">
+                    <field name="name" string="Número" />
+                    <field name="partner_id" string="Persona que Recibe" />
+                    <field name="created_by_id" string="Creado por" />
+                    <field name="concept" string="Concepto" />
+                    <field name="date" />
+
+                    <!-- Filtros predefinidos -->
+                    <filter string="Borradores" name="draft" domain="[('state','=','draft')]" />
+                    <filter string="Confirmados" name="confirmed"
+                        domain="[('state','=','confirmed')]" />
+                    <filter string="Cancelados" name="cancelled"
+                        domain="[('state','=','cancelled')]" />
+                    <separator />
+                    <filter string="Logística" name="logistica" domain="[('area','=','logistica')]" />
+                    <filter string="Admin. Gerencia" name="admin_gerencia"
+                        domain="[('area','=','admin_gerencia')]" />
+                    <separator />
+                    <filter string="Mis Recibos" name="my_receipts"
+                        domain="[('created_by_id','=',uid)]" />
+                    <separator />
+                    <filter string="Hoy" name="today" domain="[('date','=',context_today())]" />
+                    <filter string="Esta Semana" name="this_week"
+                        domain="[('date','&gt;=', (context_today() - datetime.timedelta(days=6)).strftime('%Y-%m-%d'))]" />
+                    <filter string="Este Mes" name="current_month"
+                        domain="[('date','&gt;=', time.strftime('%Y-%m-01'))]" />
+
+                    <!-- Agrupaciones -->
+                    <group expand="0" string="Agrupar Por">
+                        <filter string="Estado" name="group_state" context="{'group_by': 'state'}" />
+                        <filter string="Área" name="group_area" context="{'group_by': 'area'}" />
+                        <filter string="Persona que Recibe" name="group_partner"
+                            context="{'group_by': 'partner_id'}" />
+                        <filter string="Creado por" name="group_created_by"
+                            context="{'group_by': 'created_by_id'}" />
+                        <filter string="Fecha" name="group_date"
+                            context="{'group_by': 'date:month'}" />
+                    </group>
+                </search>
+            </field>
+        </record>
+
+    </data>
+</odoo>

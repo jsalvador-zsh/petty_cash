@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Acción del reporte -->
+        <record id="action_report_cash_receipt" model="ir.actions.report">
+            <field name="name">Recibo de Constancia</field>
+            <field name="model">cash.receipt</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">petty_cash.report_cash_receipt</field>
+            <field name="report_file">petty_cash.report_cash_receipt</field>
+            <field name="print_report_name">'Recibo - %s' % (object.name)</field>
+            <field name="binding_model_id" ref="model_cash_receipt" />
+            <field name="binding_type">report</field>
+            <field name="paperformat_id" ref="petty_cash.paperformat_a5_horizontal_receipt" />
+        </record>
+        <!-- Template del recibo -->
+        <template id="report_cash_receipt_document">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="petty_cash.receipt_layout_horizontal">
+                    <t t-set="company" t-value="o.company_id" />
+                    <div class="page"
+                        style="font-family: Arial, sans-serif; font-size: 14px; padding: 5px; margin: 0;">
+                        <!-- Encabezado del recibo -->
+                        <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px; margin-top: 4px;">
+                            <tr>
+                                <td style="width: 65%; padding: 3px; border: 1px solid black;">
+                                    <div style="font-weight: bold;"> <t t-esc="o.name" />
+                                    </div>
+                                    <div style="margin-top: 5px;"> Fecha: <t
+                                            t-esc="o.date.strftime('%d/%m/%Y')" />
+                                    </div>
+                                </td>
+                                <td
+                                    style="width: 35%; padding: 3px; border: 1px solid black; text-align: center;">
+                                    <div style="font-size: 20px; font-weight: bold;"> S/. <t
+                                            t-esc="'{:,.2f}'.format(o.amount)" />
+                                    </div>
+                                    <div style="margin-top: 4px; font-weight: bold;"> Área: <t
+                                            t-if="o.area == 'logistica'">LOGÍSTICA</t><t
+                                            t-if="o.area == 'admin_gerencia'">ADMIN. GERENCIA</t>
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <!-- Información de personas -->
+                        <table style="width: 100%; border-collapse: collapse; margin-bottom: 5px;">
+                            <tr>
+                                <td style="width: 50%; padding: 3px; border: 1px solid black;">
+                                    <strong>YO:</strong>
+                                    <div
+                                        style="border-bottom: 1px dotted black; min-height: 20px; margin-top: 5px;">
+                                        <t t-if="o.partner_id">
+                                            <t t-esc="o.partner_id.name.upper()" />
+                                        </t>
+                                        <t t-else="">______________________________</t>
+                                    </div>
+                                    <div style="margin-top: 4px;"> DNI/RUC: <t
+                                            t-esc="o.partner_id.vat or '__________________'" />
+                                    </div>
+                                </td>
+                                <td style="width: 50%; padding: 3px; border: 1px solid black;">
+                                    <strong>RECIBÍ DE:</strong>
+                                    <div
+                                        style="border-bottom: 1px dotted black; min-height: 20px; margin-top: 5px;">
+                                        <t t-esc="o.company_id.name.upper()" />
+                                    </div>
+                                    <div style="margin-top: 4px;"> RUC: <t
+                                            t-esc="o.company_id.vat" />
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <!-- La suma de -->
+                        <table style="width: 100%; border-collapse: collapse; margin-bottom: 5px;">
+                            <tr>
+                                <td style="padding: 3px; border: 1px solid black;">
+                                    <strong>LA SUMA DE:</strong>
+                                    <div
+                                        style="text-align: center; font-weight: bold; margin-top: 5px; padding: 3px;">
+                                        <t t-esc="o.amount_to_words()" />
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <!-- Por concepto de -->
+                        <table style="width: 100%; border-collapse: collapse; margin-bottom: 5px;">
+                            <tr>
+                                <td style="padding: 3px; border: 1px solid black;">
+                                    <strong>POR CONCEPTO DE:</strong>
+                                    <div
+                                        style="text-align: center; margin-top: 5px; min-height: 20px;">
+                                        <t t-if="o.concept">
+                                            <t t-esc="o.concept.upper()" />
+                                        </t>
+                                        <t t-if="not o.concept and o.area == 'logistica'">APOYO EN
+                                            ÁREA DE LOGÍSTICA</t>
+                                        <t t-if="not o.concept and o.area == 'admin_gerencia'">APOYO
+                                            EN ÁREA DE ADMINISTRACIÓN</t>
+                                        <t t-if="o.notes"> - <t t-esc="o.notes.upper()" /></t>
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <!-- Total -->
+                        <table style="width: 100%; border-collapse: collapse; margin-bottom: 5px;">
+                            <tr>
+                                <td
+                                    style="width: 70%; text-align: right; padding: 3px; border: 1px solid black; font-weight: bold;">
+                                    TOTAL:
+                                </td>
+                                <td
+                                    style="width: 30%; text-align: center; padding: 3px; border: 1px solid black; font-weight: bold; font-size: 13px;">
+                                    S/. <t t-esc="'{:,.2f}'.format(o.amount)" />
+                                </td>
+                            </tr>
+                        </table>
+
+                        <!-- Firmas -->
+                        <table style="width: 100%; border-collapse: collapse; margin-top: 5px;">
+                            <tr>
+                                <td
+                                    style="width: 45%; text-align: center; padding: 3px; vertical-align: bottom;">
+                                    <div style="margin-bottom: 40px;">
+                                        <br />
+                                        <br />
+                                    </div>
+                                    <div style="border-top: 1px solid black; padding-top: 10px;">
+                                        <strong>RECIBÍ CONFORME</strong>
+                                        <br />
+                                        <t
+                                            t-esc="o.partner_id.name.upper() if o.partner_id else 'BENEFICIARIO'" />
+                                        <br />
+                                        <span>DNI: <t
+                                                t-esc="o.partner_id.vat or '_____________'" /></span>
+                                    </div>
+                                </td>
+                                <td style="width: 10%;"></td>
+                                <td
+                                    style="width: 45%; text-align: center; padding: 3px; vertical-align: bottom;">
+                                    <div style="margin-bottom: 40px;">
+                                        <br />
+                                        <br />
+                                    </div>
+                                    <div style="border-top: 1px solid black; padding-top: 10px;">
+                                        <strong>ENTREGUÉ CONFORME</strong>
+                                        <br />
+                                        <span>Área: <t
+                                                t-if="o.area == 'logistica'">LOGÍSTICA</t><t
+                                                t-if="o.area == 'admin_gerencia'">ADMIN. GERENCIA</t></span>
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <!-- Pie de página -->
+                        <div
+                            style="text-align: center; margin-top: 15px; font-size: 11px; color: #666;">
+                            <div style="border-top: 1px solid #ccc; padding-top: 5px;"> Documento
+                                generado electrónicamente - <t t-esc="o.date.strftime('%d/%m/%Y')" />
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </template>
+
+        <!-- Template principal -->
+        <template id="report_cash_receipt">
+            <t t-call="web.html_container">
+                <t t-foreach="docs" t-as="doc">
+                    <t t-call="petty_cash.report_cash_receipt_document" />
+                </t>
+            </t>
+        </template>
+
+    </data>
+</odoo>

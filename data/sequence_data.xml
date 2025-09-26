@@ -39,5 +39,18 @@
             <field name="use_date_range">True</field>
             <field name="company_id" eval="False" />
         </record>
+
+        <!-- Secuencia para Recibos de Constancia -->
+        <record id="sequence_cash_receipt" model="ir.sequence">
+            <field name="name">Secuencia Recibos de Constancia</field>
+            <field name="code">cash.receipt</field>
+            <field name="prefix">RECIBO/%(year)s/</field>
+            <field name="suffix"></field>
+            <field name="padding">4</field>
+            <field name="number_next">1</field>
+            <field name="number_increment">1</field>
+            <field name="use_date_range">True</field>
+            <field name="company_id" eval="False" />
+        </record>
     </data>
 </odoo>

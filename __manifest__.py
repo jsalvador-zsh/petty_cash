@@ -1,14 +1,18 @@
 {
     'name': 'Caja Chica',
     'version': '18.0.1.0.0',
-    'summary': 'Gestión de Caja Chica y Caja de Distribución',
+    'summary': 'Gestión de Caja Chica, Caja de Distribución y Recibos de Constancia',
     'description': """
         Módulo para la gestión de:
         - Caja Chica
-        - Caja de Distribución (próximamente)
+        - Caja de Distribución
+        - Caja de Logística
+        - Recibos de Constancia por Entrega de Efectivo
         
         Permite llevar un control detallado de ingresos y egresos
         con formato profesional basado en plantillas Excel.
+        Incluye sistema de recibos de constancia para documentar
+        entregas de efectivo a terceras personas.
     """,
     'author': 'Juan Salvador',
     'category': 'Accounting',
@@ -29,10 +33,14 @@
         'views/distribution_cash_menus.xml',
         'views/logistics_cash_views.xml',
         'views/logistics_cash_menus.xml',
+        'views/cash_receipt_views.xml',
+        'views/cash_receipt_menus.xml',
         'reports/paperformat.xml',
         'reports/peruanita_layout_background_horizontal.xml',
+        'reports/receipt_layout.xml',
         'reports/caja_chica_report.xml',
         'reports/distribution_cash_report.xml',
+        'reports/cash_receipt_report.xml',
     ],
     'assets': {
         'web.assets_backend': [

@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- Acción principal para Recibos de Constancia -->
+        <record id="action_cash_receipt" model="ir.actions.act_window">
+            <field name="name">Recibos de Constancia</field>
+            <field name="res_model">cash.receipt</field>
+            <field name="view_mode">kanban,list,form</field>
+            <field name="context">{
+                'default_state': 'draft',
+                'search_default_my_receipts': 1,
+                'search_default_group_area': 1,
+            }</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    ¡Crea tu primer Recibo de Constancia!
+                </p>
+                <p>
+                    Los Recibos de Constancia te permiten documentar formalmente 
+                    la entrega de efectivo a terceras personas, manteniendo un 
+                    registro detallado y profesional.
+                </p>
+            </field>
+        </record>
+
+        <!-- Acción para crear nuevo recibo -->
+        <record id="action_cash_receipt_new" model="ir.actions.act_window">
+            <field name="name">Nuevo Recibo de Constancia</field>
+            <field name="res_model">cash.receipt</field>
+            <field name="view_mode">form</field>
+            <field name="target">current</field>
+            <field name="context">{
+                'default_state': 'draft',
+            }</field>
+        </record>
+
+        <!-- Acción para recibos confirmados -->
+        <record id="action_cash_receipt_confirmed" model="ir.actions.act_window">
+            <field name="name">Recibos Confirmados</field>
+            <field name="res_model">cash.receipt</field>
+            <field name="view_mode">list,kanban,form</field>
+            <field name="domain">[('state', '=', 'confirmed')]</field>
+            <field name="context">{
+                'search_default_confirmed': 1,
+                'search_default_group_area': 1,
+            }</field>
+        </record>
+
+        <!-- Acción para recibos por área -->
+        <record id="action_cash_receipt_by_area" model="ir.actions.act_window">
+            <field name="name">Recibos por Área</field>
+            <field name="res_model">cash.receipt</field>
+            <field name="view_mode">kanban,list,form</field>
+            <field name="context">{
+                'search_default_confirmed': 1,
+                'search_default_group_area': 1,
+                'search_default_current_month': 1,
+            }</field>
+        </record>
+
+        <!-- Acción para resumen mensual -->
+        <record id="action_cash_receipt_monthly" model="ir.actions.act_window">
+            <field name="name">Resumen Mensual de Recibos</field>
+            <field name="res_model">cash.receipt</field>
+            <field name="view_mode">list,form</field>
+            <field name="domain">[('date', '>=', (context_today().strftime('%Y-%m-01')))]</field>
+            <field name="context">{
+                'search_default_group_area': 1,
+                'search_default_confirmed': 1,
+            }</field>
+        </record>
+
+        <!-- Submenú principal para Recibos de Constancia -->
+        <menuitem id="menu_cash_receipt_root" 
+                  name="Recibos de Constancia" 
+                  parent="menu_petty_cash_main" 
+                  sequence="40"/>
+
+        <!-- Submenús -->
+        <menuitem id="menu_cash_receipt_all" 
+                  name="Todos los Recibos" 
+                  parent="menu_cash_receipt_root" 
+                  sequence="10"
+                  action="action_cash_receipt"/>
+
+        <menuitem id="menu_cash_receipt_new" 
+                  name="Crear Nuevo Recibo" 
+                  parent="menu_cash_receipt_root" 
+                  sequence="5"
+                  action="action_cash_receipt_new"/>
+
+        <menuitem id="menu_cash_receipt_confirmed" 
+                  name="Recibos Confirmados" 
+                  parent="menu_cash_receipt_root" 
+                  sequence="20"
+                  action="action_cash_receipt_confirmed"/>
+
+        <menuitem id="menu_cash_receipt_by_area" 
+                  name="Recibos por Área" 
+                  parent="menu_cash_receipt_root" 
+                  sequence="30"
+                  action="action_cash_receipt_by_area"/>
+
+        <!-- Menús en Reportes -->
+        <menuitem id="menu_cash_receipt_monthly" 
+                  name="Resumen Mensual Recibos" 
+                  parent="menu_petty_cash_reports" 
+                  sequence="70"
+                  action="action_cash_receipt_monthly"/>
+
+    </data>
+</odoo>

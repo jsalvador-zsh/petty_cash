@@ -13,3 +13,5 @@ access_logistics_cash_line_user,logistics.cash.line.user,model_logistics_cash_li
 access_logistics_cash_line_manager,logistics.cash.line.manager,model_logistics_cash_line,petty_cash.group_cash_manager,1,1,1,1
 access_payment_type_user,payment.type.user,model_payment_type,petty_cash.group_cash_user,1,0,0,0
 access_payment_type_manager,payment.type.manager,model_payment_type,petty_cash.group_cash_manager,1,1,1,1
+access_cash_receipt_user,cash.receipt.user,model_cash_receipt,petty_cash.group_cash_user,1,1,1,1
+access_cash_receipt_manager,cash.receipt.manager,model_cash_receipt,petty_cash.group_cash_manager,1,1,1,1

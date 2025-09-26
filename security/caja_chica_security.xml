@@ -206,5 +206,31 @@
             <field name="perm_unlink" eval="True"/>
         </record>
 
+        <!-- ========== REGLAS DE ACCESO PARA RECIBOS DE CONSTANCIA ========== -->
+
+        <!-- Usuarios: Solo sus propios recibos -->
+        <record id="cash_receipt_user_rule" model="ir.rule">
+            <field name="name">Recibos de Constancia: Usuario ve solo sus recibos</field>
+            <field name="model_id" ref="model_cash_receipt"/>
+            <field name="groups" eval="[(4, ref('group_cash_user'))]"/>
+            <field name="domain_force">[('created_by_id', '=', user.id)]</field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
+        <!-- Administradores: Todos los recibos -->
+        <record id="cash_receipt_manager_rule" model="ir.rule">
+            <field name="name">Recibos de Constancia: Administrador ve todos los recibos</field>
+            <field name="model_id" ref="model_cash_receipt"/>
+            <field name="groups" eval="[(4, ref('group_cash_manager'))]"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
     </data>
 </odoo>
