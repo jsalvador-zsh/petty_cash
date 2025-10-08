@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        
+        <!-- Vista Form del Wizard -->
+        <record id="view_pay_invoice_wizard_form" model="ir.ui.view">
+            <field name="name">pay.invoice.wizard.form</field>
+            <field name="model">pay.invoice.wizard</field>
+            <field name="arch" type="xml">
+                <form string="Pagar Factura desde Caja">
+                    <sheet>
+                        <group>
+                            <group string="Seleccionar Caja">
+                                <field name="cash_type" widget="radio"/>
+                                <field name="petty_cash_id" invisible="cash_type != 'petty'" required="cash_type == 'petty'" options="{'no_create': True}"/>
+                                <field name="distribution_cash_id" invisible="cash_type != 'distribution'" required="cash_type == 'distribution'" options="{'no_create': True}"/>
+                                <field name="logistics_cash_id" invisible="cash_type != 'logistics'" required="cash_type == 'logistics'" options="{'no_create': True}"/>
+                                <field name="cash_balance" readonly="1" widget="monetary"/>
+                            </group>
+                            <group string="Información de Factura">
+                                <field name="invoice_id" options="{'no_create': True}"/>
+                                <field name="partner_id"/>
+                                <field name="currency_id" invisible="1"/>
+                                <field name="amount_residual" widget="monetary"/>
+                            </group>
+                        </group>
+                        
+                        <group>
+                            <group string="Detalles del Pago">
+                                <field name="date"/>
+                                <field name="amount" widget="monetary"/>
+                            </group>
+                            <group string="Descripción">
+                                <field name="description" nolabel="1"/>
+                            </group>
+                        </group>
+                    </sheet>
+                    
+                    <footer>
+                        <button string="Registrar Pago" name="action_pay_invoice" type="object" class="btn-primary"/>
+                        <button string="Cancelar" class="btn-secondary" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+        
+        <!-- Acción del Wizard -->
+        <record id="action_pay_invoice_wizard" model="ir.actions.act_window">
+            <field name="name">Pagar Factura desde Caja</field>
+            <field name="res_model">pay.invoice.wizard</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+            <field name="binding_model_id" ref="account.model_account_move"/>
+            <field name="binding_view_types">form</field>
+        </record>
+        
+    </data>
+</odoo>

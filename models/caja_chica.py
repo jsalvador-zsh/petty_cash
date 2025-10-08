@@ -33,6 +33,14 @@ class CajaChica(models.Model):
         required=True,
         default=lambda self: self.env.user
     )
+    
+    journal_id = fields.Many2one(
+        'account.journal',
+        string='Diario Contable',
+        domain="[('type', 'in', ['cash', 'bank'])]",
+        required=True,
+        help='Diario contable asociado a esta caja'
+    )
 
     initial_payment_type_id = fields.Many2one(
         'payment.type',
@@ -79,6 +87,21 @@ class CajaChica(models.Model):
         'petty.cash.line',
         'petty_cash_id',
         string='Movimientos'
+    )
+    
+    # Contabilidad
+    move_id = fields.Many2one(
+        'account.move',
+        string='Asiento Contable',
+        readonly=True,
+        help='Asiento contable generado al abrir la caja'
+    )
+    
+    closing_move_id = fields.Many2one(
+        'account.move',
+        string='Asiento de Cierre',
+        readonly=True,
+        help='Asiento contable generado al cerrar la caja'
     )
     
     # Campo calculado para mostrar nombre
@@ -146,6 +169,54 @@ class CajaChica(models.Model):
 
     # ========== MÉTODOS DE ACCIÓN ==========
 
+    def _create_opening_move(self):
+        """Crear asiento contable de apertura de caja"""
+        self.ensure_one()
+        if not self.journal_id:
+            raise UserError("Debe seleccionar un diario contable para la caja.")
+        
+        # Obtener cuenta de caja del diario
+        cash_account = self.journal_id.default_account_id
+        if not cash_account:
+            raise UserError(f"El diario {self.journal_id.name} no tiene una cuenta por defecto configurada.")
+        
+        # Obtener cuenta de contraparte (cuenta transitoria o de control)
+        # Usamos la cuenta de pérdidas y ganancias no asignadas o una cuenta configurable
+        company = self.company_id
+        counterpart_account = company.account_journal_suspense_account_id
+        if not counterpart_account:
+            raise UserError("No se ha configurado una cuenta de suspense en la compañía.")
+        
+        # Crear asiento contable
+        move_vals = {
+            'journal_id': self.journal_id.id,
+            'date': self.date,
+            'ref': f'Apertura {self.name}',
+            'line_ids': [
+                # Débito: Entrada de efectivo en caja
+                (0, 0, {
+                    'name': f'Apertura de {self.name} - Monto Inicial',
+                    'account_id': cash_account.id,
+                    'debit': self.initial_amount,
+                    'credit': 0.0,
+                    'partner_id': False,
+                }),
+                # Crédito: Cuenta de contraparte
+                (0, 0, {
+                    'name': f'Apertura de {self.name} - Monto Inicial',
+                    'account_id': counterpart_account.id,
+                    'debit': 0.0,
+                    'credit': self.initial_amount,
+                    'partner_id': False,
+                }),
+            ],
+        }
+        
+        move = self.env['account.move'].create(move_vals)
+        move.action_post()
+        
+        return move
+
     def action_open(self):
         """Abrir caja con validaciones y asignar secuencia"""
         for record in self:
@@ -161,11 +232,68 @@ class CajaChica(models.Model):
             if record.name == 'Borrador':
                 record.name = record._get_next_sequence()
             
-            record.write({'state': 'open'})
+            # Crear asiento contable de apertura
+            opening_move = record._create_opening_move()
+            
+            record.write({
+                'state': 'open',
+                'move_id': opening_move.id
+            })
             record.message_post(
-                body=f"Caja Chica {record.name} abierta con monto inicial: {record.initial_amount}",
+                body=f"Caja Chica {record.name} abierta con monto inicial: {record.initial_amount}. Asiento contable: {opening_move.name}",
                 message_type='notification'
             )
+
+    def _create_closing_move(self):
+        """Crear asiento contable de cierre de caja"""
+        self.ensure_one()
+        if not self.journal_id:
+            raise UserError("Debe seleccionar un diario contable para la caja.")
+        
+        # Si el saldo es 0, no crear asiento de cierre
+        if self.current_balance == 0:
+            return False
+        
+        # Obtener cuenta de caja del diario
+        cash_account = self.journal_id.default_account_id
+        if not cash_account:
+            raise UserError(f"El diario {self.journal_id.name} no tiene una cuenta por defecto configurada.")
+        
+        # Obtener cuenta de contraparte
+        company = self.company_id
+        counterpart_account = company.account_journal_suspense_account_id
+        if not counterpart_account:
+            raise UserError("No se ha configurado una cuenta de suspense en la compañía.")
+        
+        # Crear asiento contable de cierre (devolver el saldo)
+        move_vals = {
+            'journal_id': self.journal_id.id,
+            'date': fields.Date.context_today(self),
+            'ref': f'Cierre {self.name}',
+            'line_ids': [
+                # Crédito: Salida de efectivo de caja
+                (0, 0, {
+                    'name': f'Cierre de {self.name} - Devolución de saldo',
+                    'account_id': cash_account.id,
+                    'debit': 0.0,
+                    'credit': self.current_balance,
+                    'partner_id': False,
+                }),
+                # Débito: Cuenta de contraparte
+                (0, 0, {
+                    'name': f'Cierre de {self.name} - Devolución de saldo',
+                    'account_id': counterpart_account.id,
+                    'debit': self.current_balance,
+                    'credit': 0.0,
+                    'partner_id': False,
+                }),
+            ],
+        }
+        
+        move = self.env['account.move'].create(move_vals)
+        move.action_post()
+        
+        return move
 
     def action_close(self):
         """Cerrar caja con validaciones"""
@@ -178,9 +306,21 @@ class CajaChica(models.Model):
                     f"Saldo actual: {record.current_balance}"
                 )
             
-            record.write({'state': 'closed'})
+            # Crear asiento contable de cierre si hay saldo
+            closing_move = record._create_closing_move()
+            
+            vals = {'state': 'closed'}
+            if closing_move:
+                vals['closing_move_id'] = closing_move.id
+                
+            record.write(vals)
+            
+            message = f"Caja Chica {record.name} cerrada con saldo final: {record.current_balance}"
+            if closing_move:
+                message += f". Asiento de cierre: {closing_move.name}"
+            
             record.message_post(
-                body=f"Caja Chica {record.name} cerrada con saldo final: {record.current_balance}",
+                body=message,
                 message_type='notification'
             )
 
@@ -323,6 +463,28 @@ class CajaChicaLine(models.Model):
         'ir.attachment',
         string='Adjuntos'
     )
+    
+    # Campos para integración contable
+    invoice_id = fields.Many2one(
+        'account.move',
+        string='Factura',
+        domain="[('move_type', 'in', ['out_invoice', 'in_invoice', 'out_refund', 'in_refund']), ('state', '=', 'posted'), ('payment_state', 'in', ['not_paid', 'partial'])]",
+        help='Factura del sistema que se está pagando con esta línea'
+    )
+    
+    payment_id = fields.Many2one(
+        'account.payment',
+        string='Pago Generado',
+        readonly=True,
+        help='Pago generado en el sistema al registrar este movimiento'
+    )
+    
+    move_id = fields.Many2one(
+        'account.move',
+        string='Asiento Contable',
+        readonly=True,
+        help='Asiento contable generado para este movimiento'
+    )
 
     # ========== VALIDACIONES PARA LÍNEAS ==========
     
@@ -384,6 +546,169 @@ class CajaChicaLine(models.Model):
     def _onchange_partner_id(self):
         if self.partner_id:
             self.partner_name = self.partner_id.name
+    
+    @api.onchange('invoice_id')
+    def _onchange_invoice_id(self):
+        """Autocompletar información de la factura"""
+        if self.invoice_id:
+            self.partner_id = self.invoice_id.partner_id
+            self.amount = self.invoice_id.amount_residual
+            self.document_type = 'factura' if self.invoice_id.move_type in ['out_invoice', 'in_invoice'] else 'boleta'
+            self.document_number = self.invoice_id.name
+            self.description = f"Pago de {self.invoice_id.name} - {self.invoice_id.partner_id.name}"
+            self.line_type = 'expense'
+    
+    def _create_line_move(self):
+        """Crear asiento contable para el movimiento"""
+        self.ensure_one()
+        
+        if self.petty_cash_id.state != 'open':
+            return False
+        
+        # Si ya existe un asiento, no crear otro
+        if self.move_id:
+            return self.move_id
+        
+        # Obtener cuenta de caja
+        cash_account = self.petty_cash_id.journal_id.default_account_id
+        if not cash_account:
+            raise UserError(f"El diario {self.petty_cash_id.journal_id.name} no tiene una cuenta por defecto configurada.")
+        
+        # Determinar cuenta de contrapartida
+        if self.partner_id:
+            if self.line_type == 'expense':
+                # Para gastos con proveedor, usar cuenta por pagar
+                counterpart_account = self.partner_id.property_account_payable_id
+            else:
+                # Para ingresos con cliente, usar cuenta por cobrar
+                counterpart_account = self.partner_id.property_account_receivable_id
+        else:
+            # Sin proveedor/cliente, usar cuenta de gastos/ingresos genérica
+            company = self.petty_cash_id.company_id
+            if self.line_type == 'expense':
+                counterpart_account = company.account_journal_suspense_account_id
+            else:
+                counterpart_account = company.account_journal_suspense_account_id
+        
+        if not counterpart_account:
+            raise UserError("No se pudo determinar la cuenta de contrapartida para el movimiento.")
+        
+        # Crear líneas del asiento
+        line_vals = []
+        if self.line_type == 'expense':
+            # Egreso: Crédito en caja, Débito en gasto/proveedor
+            line_vals = [
+                (0, 0, {
+                    'name': self.description or 'Egreso de caja',
+                    'account_id': counterpart_account.id,
+                    'debit': self.amount,
+                    'credit': 0.0,
+                    'partner_id': self.partner_id.id if self.partner_id else False,
+                }),
+                (0, 0, {
+                    'name': self.description or 'Egreso de caja',
+                    'account_id': cash_account.id,
+                    'debit': 0.0,
+                    'credit': self.amount,
+                    'partner_id': False,
+                }),
+            ]
+        else:
+            # Ingreso: Débito en caja, Crédito en ingreso/cliente
+            line_vals = [
+                (0, 0, {
+                    'name': self.description or 'Ingreso de caja',
+                    'account_id': cash_account.id,
+                    'debit': self.amount,
+                    'credit': 0.0,
+                    'partner_id': False,
+                }),
+                (0, 0, {
+                    'name': self.description or 'Ingreso de caja',
+                    'account_id': counterpart_account.id,
+                    'debit': 0.0,
+                    'credit': self.amount,
+                    'partner_id': self.partner_id.id if self.partner_id else False,
+                }),
+            ]
+        
+        # Crear asiento
+        move_vals = {
+            'journal_id': self.petty_cash_id.journal_id.id,
+            'date': self.date,
+            'ref': f'{self.petty_cash_id.name} - {self.description[:50] if self.description else "Movimiento"}',
+            'line_ids': line_vals,
+        }
+        
+        move = self.env['account.move'].create(move_vals)
+        move.action_post()
+        
+        self.move_id = move.id
+        return move
+    
+    def _create_payment_for_invoice(self):
+        """Crear pago para factura enlazada"""
+        self.ensure_one()
+        
+        if not self.invoice_id:
+            return False
+        
+        # Si ya existe un pago, no crear otro
+        if self.payment_id:
+            return self.payment_id
+        
+        # Determinar tipo de pago
+        payment_type = 'outbound' if self.invoice_id.move_type in ['in_invoice', 'out_refund'] else 'inbound'
+        partner_type = 'supplier' if self.invoice_id.move_type in ['in_invoice', 'out_refund'] else 'customer'
+        
+        # Crear el pago
+        payment_vals = {
+            'payment_type': payment_type,
+            'partner_type': partner_type,
+            'partner_id': self.invoice_id.partner_id.id,
+            'amount': self.amount,
+            'date': self.date,
+            'journal_id': self.petty_cash_id.journal_id.id,
+            'memo': f'{self.petty_cash_id.name} - Pago {self.invoice_id.name}',
+        }
+        
+        payment = self.env['account.payment'].create(payment_vals)
+        payment.action_post()
+        
+        # Conciliar el pago con la factura
+        # En Odoo 18, accedemos a las líneas a través del asiento contable
+        if payment.move_id:
+            payment_lines = payment.move_id.line_ids.filtered(
+                lambda l: l.account_id.account_type in ('asset_receivable', 'liability_payable') 
+                and not l.reconciled
+            )
+            invoice_lines = self.invoice_id.line_ids.filtered(
+                lambda l: l.account_id.account_type in ('asset_receivable', 'liability_payable') 
+                and not l.reconciled
+            )
+            
+            lines_to_reconcile = payment_lines + invoice_lines
+            if lines_to_reconcile:
+                lines_to_reconcile.reconcile()
+        
+        self.payment_id = payment.id
+        return payment
+    
+    @api.model
+    def create(self, vals):
+        """Override create para generar asientos automáticamente"""
+        line = super(CajaChicaLine, self).create(vals)
+        
+        # Si la caja está abierta, crear movimientos contables
+        if line.petty_cash_id.state == 'open':
+            # Si tiene factura asociada, crear pago
+            if line.invoice_id:
+                line._create_payment_for_invoice()
+            else:
+                # Sino, crear asiento contable simple
+                line._create_line_move()
+        
+        return line
 
     # ========== RESTRICCIONES DE ELIMINACIÓN PARA LÍNEAS ==========
     

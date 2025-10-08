@@ -35,6 +35,7 @@
         'views/logistics_cash_menus.xml',
         'views/cash_receipt_views.xml',
         'views/cash_receipt_menus.xml',
+        'views/pay_invoice_wizard_views.xml',
         'reports/paperformat.xml',
         'reports/peruanita_layout_background_horizontal.xml',
         'reports/receipt_layout.xml',

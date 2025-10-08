@@ -47,6 +47,7 @@
                                 <field name="date" readonly="state == 'closed'"/>
                                 <field name="responsible_id" readonly="state == 'closed'"/>
                                 <field name="company_id" groups="base.group_multi_company" readonly="state == 'closed'"/>
+                                <field name="journal_id" readonly="state != 'draft'" options="{'no_create': True, 'no_open': True}"/>
                                 <field name="initial_amount" readonly="state == 'closed'"/>
                             </group>
                             <group string="Información del Monto Inicial">
@@ -54,6 +55,16 @@
                                 <field name="initial_operation_number" readonly="state == 'closed'" placeholder="Ej: OP-123456 o CHQ-789"/>
                             </group>
                         </group>
+                        
+                        <group string="Contabilidad" invisible="state == 'draft'">
+                            <group>
+                                <field name="move_id" readonly="1"/>
+                            </group>
+                            <group>
+                                <field name="closing_move_id" readonly="1" invisible="state != 'closed'"/>
+                            </group>
+                        </group>
+                        
                         <group>
                             <group string="Resumen Financiero">
                                 <field name="total_income" readonly="1"/>
@@ -68,6 +79,7 @@
                                         <field name="sequence" widget="handle"/>
                                         <field name="date"/>
                                         <field name="line_type"/>
+                                        <field name="invoice_id" optional="show" options="{'no_create': True}"/>
                                         <field name="area_id"/>
                                         <field name="document_type"/>
                                         <field name="document_number"/>
@@ -76,6 +88,8 @@
                                         <field name="description"/>
                                         <field name="amount" sum="Total"/>
                                         <field name="balance"/>
+                                        <field name="payment_id" optional="hide" readonly="1"/>
+                                        <field name="move_id" optional="hide" readonly="1"/>
                                     </list>
                                 </field>
                             </page>
