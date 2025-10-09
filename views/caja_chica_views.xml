@@ -111,6 +111,7 @@
                     <field name="name"/>
                     <field name="date"/>
                     <field name="responsible_id"/>
+                    <field name="initial_amount"/>
                     <field name="current_balance"/>
                     <field name="state"/>
                     <templates>
@@ -131,11 +132,21 @@
                                         </div>
                                     </div>
                                     <div class="row">
-                                        <div class="col-8">
+                                        <div class="col-12">
                                             <field name="responsible_id"/>
                                         </div>
-                                        <div class="col-4 text-right">
-                                            <strong>S/. <field name="current_balance"/></strong>
+                                    </div>
+                                    <div class="row mt-2">
+                                        <div class="col-6">
+                                            <small class="text-muted">Monto Inicial:</small><br/>
+                                            <strong>S/. <field name="initial_amount"/></strong>
+                                        </div>
+                                        <div class="col-6 text-right">
+                                            <small class="text-muted">
+                                                <t t-if="record.state.raw_value == 'closed'">Saldo Final:</t>
+                                                <t t-else="">Saldo Actual:</t>
+                                            </small><br/>
+                                            <strong class="text-success">S/. <field name="current_balance"/></strong>
                                         </div>
                                     </div>
                                 </div>
