@@ -37,8 +37,9 @@ class DistributionCash(models.Model):
     journal_id = fields.Many2one(
         'account.journal',
         string='Diario Contable',
-        domain="[('type', 'in', ['cash', 'bank'])]",
+        domain="[('type', 'in', ['cash', 'bank']), ('company_id', '=', company_id)]",
         required=True,
+        check_company=True,
         help='Diario contable asociado a esta caja'
     )
     
@@ -121,7 +122,7 @@ class DistributionCash(models.Model):
 
     def _get_next_sequence(self):
         """Obtener la siguiente secuencia disponible"""
-        return self.env['ir.sequence'].next_by_code('distribution.cash') or 'DIST/001'
+        return self.env['ir.sequence'].with_company(self.company_id).next_by_code('distribution.cash') or 'DIST/001'
 
     @api.depends('name', 'date', 'responsible_id', 'state')
     def _compute_display_name(self):
@@ -391,7 +392,15 @@ class DistributionCashLine(models.Model):
         required=True,
         ondelete='cascade'
     )
-    
+
+    company_id = fields.Many2one(
+        'res.company',
+        string='Compañía',
+        related='distribution_cash_id.company_id',
+        store=True,
+        readonly=True
+    )
+
     # Campos de control
     sequence = fields.Integer(string='Secuencia', default=10)
     
@@ -403,7 +412,8 @@ class DistributionCashLine(models.Model):
     )
     area_id = fields.Many2one(
         'hr.department',
-        string='Área'
+        string='Área',
+        check_company=True
     )
     
     # Tipo de movimiento
@@ -457,7 +467,8 @@ class DistributionCashLine(models.Model):
     invoice_id = fields.Many2one(
         'account.move',
         string='Factura',
-        domain="[('move_type', 'in', ['out_invoice', 'in_invoice', 'out_refund', 'in_refund']), ('state', '=', 'posted'), ('payment_state', 'in', ['not_paid', 'partial'])]",
+        domain="[('move_type', 'in', ['out_invoice', 'in_invoice', 'out_refund', 'in_refund']), ('state', '=', 'posted'), ('payment_state', 'in', ['not_paid', 'partial']), ('company_id', '=', parent.company_id)]",
+        check_company=True,
         help='Factura del sistema que se está pagando con esta línea'
     )
     

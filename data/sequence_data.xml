@@ -12,7 +12,7 @@
             <field name="number_next">1</field>
             <field name="number_increment">1</field>
             <field name="use_date_range">True</field>
-            <field name="company_id" eval="False" />
+            <field name="company_id" ref="base.main_company" />
         </record>
         <!-- Secuencia para Caja de Distribución -->
         <record id="sequence_distribution_cash" model="ir.sequence">
@@ -24,7 +24,7 @@
             <field name="number_next">1</field>
             <field name="number_increment">1</field>
             <field name="use_date_range">True</field>
-            <field name="company_id" eval="False" />
+            <field name="company_id" ref="base.main_company" />
         </record>
 
         <!-- Secuencia para Caja de Logística -->
@@ -37,7 +37,7 @@
             <field name="number_next">1</field>
             <field name="number_increment">1</field>
             <field name="use_date_range">True</field>
-            <field name="company_id" eval="False" />
+            <field name="company_id" ref="base.main_company" />
         </record>
 
         <!-- Secuencia para Recibos de Constancia -->
@@ -50,7 +50,7 @@
             <field name="number_next">1</field>
             <field name="number_increment">1</field>
             <field name="use_date_range">True</field>
-            <field name="company_id" eval="False" />
+            <field name="company_id" ref="base.main_company" />
         </record>
     </data>
 </odoo>

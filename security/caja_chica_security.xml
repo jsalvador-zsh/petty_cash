@@ -232,5 +232,95 @@
             <field name="perm_unlink" eval="True"/>
         </record>
 
+        <!-- ========== REGLAS MULTIEMPRESA ========== -->
+
+        <!-- Caja Chica: Multiempresa -->
+        <record id="petty_cash_company_rule" model="ir.rule">
+            <field name="name">Caja Chica: Multiempresa</field>
+            <field name="model_id" ref="model_petty_cash"/>
+            <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
+        <!-- Líneas Caja Chica: Multiempresa -->
+        <record id="petty_cash_line_company_rule" model="ir.rule">
+            <field name="name">Líneas Caja Chica: Multiempresa</field>
+            <field name="model_id" ref="model_petty_cash_line"/>
+            <field name="domain_force">['|', ('petty_cash_id.company_id', '=', False), ('petty_cash_id.company_id', 'in', company_ids)]</field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
+        <!-- Caja Distribución: Multiempresa -->
+        <record id="distribution_cash_company_rule" model="ir.rule">
+            <field name="name">Caja Distribución: Multiempresa</field>
+            <field name="model_id" ref="model_distribution_cash"/>
+            <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
+        <!-- Líneas Caja Distribución: Multiempresa -->
+        <record id="distribution_cash_line_company_rule" model="ir.rule">
+            <field name="name">Líneas Caja Distribución: Multiempresa</field>
+            <field name="model_id" ref="model_distribution_cash_line"/>
+            <field name="domain_force">['|', ('distribution_cash_id.company_id', '=', False), ('distribution_cash_id.company_id', 'in', company_ids)]</field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
+        <!-- Caja Logística: Multiempresa -->
+        <record id="logistics_cash_company_rule" model="ir.rule">
+            <field name="name">Caja Logística: Multiempresa</field>
+            <field name="model_id" ref="model_logistics_cash"/>
+            <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
+        <!-- Líneas Caja Logística: Multiempresa -->
+        <record id="logistics_cash_line_company_rule" model="ir.rule">
+            <field name="name">Líneas Caja Logística: Multiempresa</field>
+            <field name="model_id" ref="model_logistics_cash_line"/>
+            <field name="domain_force">['|', ('logistics_cash_id.company_id', '=', False), ('logistics_cash_id.company_id', 'in', company_ids)]</field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
+        <!-- Recibos de Constancia: Multiempresa -->
+        <record id="cash_receipt_company_rule" model="ir.rule">
+            <field name="name">Recibos de Constancia: Multiempresa</field>
+            <field name="model_id" ref="model_cash_receipt"/>
+            <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
+        <!-- Tipos de Pago: Multiempresa (si decides hacerlos específicos por compañía en el futuro) -->
+        <record id="payment_type_company_rule" model="ir.rule">
+            <field name="name">Tipos de Pago: Acceso global</field>
+            <field name="model_id" ref="model_payment_type"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
     </data>
 </odoo>

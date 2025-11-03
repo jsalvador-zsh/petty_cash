@@ -110,7 +110,7 @@ class CashReceipt(models.Model):
 
     def _get_next_sequence(self):
         """Obtener la siguiente secuencia para el recibo"""
-        return self.env['ir.sequence'].next_by_code('cash.receipt') or 'REC/001'
+        return self.env['ir.sequence'].with_company(self.company_id).next_by_code('cash.receipt') or 'REC/001'
 
     @api.depends('name', 'date', 'partner_id', 'state')
     def _compute_display_name(self):
